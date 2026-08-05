@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { Analysis } from "@/lib/types";
 import { severityCounts } from "@/lib/verdict";
-import { copyText } from "@/lib/summary";
+import { copyText, QUOTE_GUARANTEE } from "@/lib/summary";
 
 /**
  * The verdict is delivered as a rubber stamp — the visual language of a
@@ -71,6 +71,15 @@ export function VerdictCard({ analysis }: { analysis: Analysis }) {
           </li>
         ))}
       </ul>
+
+      {/* The guarantee is a fact about the tool, not a finding about the
+          contract, so it is marked as such rather than set as another bullet. */}
+      {analysis.verdict !== "not_legal" && (
+        <p className="flex items-baseline gap-2.5 border-t border-rule bg-sage/8 px-5 py-3">
+          <span className="field-label shrink-0 text-sage">Checked</span>
+          <span className="text-[15px] leading-relaxed text-ink-soft">{QUOTE_GUARANTEE}</span>
+        </p>
+      )}
 
       <div className="flex flex-wrap items-center gap-2.5 border-t border-rule px-5 py-3.5">
         <button

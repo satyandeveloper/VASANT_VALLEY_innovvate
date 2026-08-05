@@ -14,8 +14,16 @@ const CLEAN_LINES: Record<Category, string> = {
   content_rights: "No grabs on your own content found.",
 };
 
-/** Exactly five bullets, built from the top verified flags. */
-export function buildSummary(flags: VerifiedFlag[], docChars: number): string[] {
+/**
+ * Findings only — up to five, and fewer when there are fewer.
+ *
+ * This used to pad to exactly five by appending the document's length and the
+ * verbatim-quote guarantee as extra bullets. They rendered identically to real
+ * findings, so a document with three risks appeared to have five, and a fact
+ * about the tool read as a fact about the contract. Both still appear in the
+ * verdict card, each in a place that says what kind of thing it is.
+ */
+export function buildSummary(flags: VerifiedFlag[]): string[] {
   const sorted = [...flags].sort(
     (a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]
   );
@@ -30,20 +38,22 @@ export function buildSummary(flags: VerifiedFlag[], docChars: number): string[] 
     if (!flaggedCategories.has(cat)) bullets.push(CLEAN_LINES[cat]);
   }
 
-  while (bullets.length < 5) {
-    bullets.push(
-      bullets.length === 4
-        ? "Every warning above is backed by an exact quote from the document."
-        : `Document length: ${docChars.toLocaleString()} characters, checked across ${CATEGORIES.length} risk categories.`
-    );
-  }
   return bullets.slice(0, 5);
 }
 
+/** The one claim worth carrying wherever a summary is pasted. */
+export const QUOTE_GUARANTEE =
+  "Every warning here quotes the document word for word, checked against the source.";
+
 export function copyText(headline: string, bullets: string[]): string {
-  return [headline, "", ...bullets.map((b) => `• ${b}`), "", `— via I AGREE. ${DISCLAIMER}`].join(
-    "\n"
-  );
+  return [
+    headline,
+    "",
+    ...bullets.map((b) => `• ${b}`),
+    "",
+    QUOTE_GUARANTEE,
+    `— via I AGREE. ${DISCLAIMER}`,
+  ].join("\n");
 }
 
 export { CATEGORY_LABELS };

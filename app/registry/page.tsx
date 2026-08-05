@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { unwrap, getLastFailure } from "@/lib/errors";
+import { DecodeAction, RegisterEmpty } from "@/components/Register";
 
 export const dynamic = "force-dynamic";
 
@@ -42,14 +43,19 @@ export default async function RegistryPage() {
         paste, you get their answer instantly.
       </p>
       {degraded ? (
-        <p className="border-l-4 border-canary-deep bg-canary/12 p-5 text-sm leading-relaxed text-ink">
-          The registry can&apos;t be loaded right now. Decoding still works — results just
-          won&apos;t be listed here until it&apos;s back.
-        </p>
+        <RegisterEmpty
+          state="unavailable"
+          headline="The registry is unavailable"
+          explain="Decoding still works. Results just won't be listed here until the registry is back."
+          action={<DecodeAction />}
+        />
       ) : rows.length === 0 ? (
-        <p className="border border-dashed border-rule p-5 text-sm text-ink-soft">
-          Nothing decoded yet. Yours would be the first.
-        </p>
+        <RegisterEmpty
+          state="empty"
+          headline="Nothing on file yet"
+          explain="Decode a document and it becomes the first entry in the registry."
+          action={<DecodeAction>Decode the first one</DecodeAction>}
+        />
       ) : (
         <ul className="divide-y divide-rule border-2 border-ink bg-white">
           {rows.map((r) => (

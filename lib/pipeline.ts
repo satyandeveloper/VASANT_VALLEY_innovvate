@@ -152,12 +152,12 @@ export async function runAnalysis(input: AnalyzeInput): Promise<Analysis> {
   if (!isLegal) {
     verdict = "not_legal";
     headline = headlineFor("not_legal", [], "");
+    // No padding line about quotes here: there are no warnings to guarantee.
     bullets = [
       "This text doesn't look like a terms of service, policy, or agreement.",
       "No risk analysis was run, so there are no flags to show.",
       "Try pasting the full legal document you were asked to accept.",
-      "The URL tab can pull a terms page directly from a link.",
-      "Every warning we do show is backed by an exact quote from the source.",
+      "The link tab can pull a terms page straight from a URL.",
     ];
   } else {
     // Verify every quote from every section against the FULL original text,
@@ -183,7 +183,7 @@ export async function runAnalysis(input: AnalyzeInput): Promise<Analysis> {
     unverified = dedupeUnverified(unverified);
     verdict = computeVerdict(flags);
     headline = headlineFor(verdict, flags, title);
-    bullets = buildSummary(flags, text.length);
+    bullets = buildSummary(flags);
   }
 
   const analysis: Analysis = {

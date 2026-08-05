@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
+import { SignInButton } from "@clerk/nextjs";
 import { supabase } from "@/lib/supabase";
 import { unwrap, getLastFailure } from "@/lib/errors";
+import { DecodeAction, RegisterEmpty } from "@/components/Register";
 
 export const dynamic = "force-dynamic";
 
@@ -18,15 +20,28 @@ export default async function HistoryPage() {
   }
 
   const { userId } = await auth();
+  // Signed out is a state of this page, not a different page. Keeping the same
+  // heading and the same register means the shape of what you would get is
+  // visible before you sign in.
   if (!userId) {
     return (
-      <div className="mx-auto max-w-md border-2 border-ink bg-white p-6 text-center">
-        <p className="field-label mb-2">Your history</p>
-        <h1 className="font-display text-xl font-extrabold text-ink">Keep your own copy</h1>
-        <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-          Sign in to keep a list of everything you&apos;ve decoded. Everything works without an
-          account — this is only a convenience.
-        </p>
+      <div className="mx-auto max-w-3xl">
+        <p className="field-label mb-2">Your file</p>
+        <h1 className="mb-6 font-display text-3xl font-extrabold tracking-tight text-ink">
+          Everything you&apos;ve decoded
+        </h1>
+        <RegisterEmpty
+          state="signed-out"
+          headline="Sign in to keep your own file"
+          explain="Decoding works without an account. Signing in only keeps a list of what you've already run."
+          action={
+            <SignInButton mode="modal">
+              <button className="inline-block border-2 border-ink bg-ink px-5 py-2.5 font-display text-xs font-bold uppercase tracking-wider text-paper transition-colors hover:border-ditto hover:bg-ditto">
+                Sign in
+              </button>
+            </SignInButton>
+          }
+        />
       </div>
     );
   }
@@ -59,14 +74,19 @@ export default async function HistoryPage() {
         Everything you&apos;ve decoded
       </h1>
       {degraded ? (
-        <p className="border-l-4 border-canary-deep bg-canary/12 p-5 text-sm leading-relaxed text-ink">
-          Your history can&apos;t be loaded right now. This is a problem on our side — nothing
-          you saved has been lost. Try again shortly.
-        </p>
+        <RegisterEmpty
+          state="unavailable"
+          headline="Your file can't be loaded"
+          explain="This is a fault on our side, and nothing you saved has been lost. Try again shortly."
+          action={<DecodeAction />}
+        />
       ) : rows.length === 0 ? (
-        <p className="border border-dashed border-rule p-5 text-sm text-ink-soft">
-          Nothing yet. Decode a document and it&apos;ll appear here.
-        </p>
+        <RegisterEmpty
+          state="empty"
+          headline="Nothing in your file yet"
+          explain="Decode a document while signed in and it will be listed here."
+          action={<DecodeAction />}
+        />
       ) : (
         <ul className="divide-y divide-rule border-2 border-ink bg-white">
           {rows
