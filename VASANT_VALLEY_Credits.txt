@@ -17,9 +17,9 @@ HOSTING
 - Vercel — deployment — https://vercel.com
 
 SAMPLE DOCUMENTS (real, public, credited)
-- [Fill in after seeding: document 1 title — source URL]
-- [Fill in after seeding: document 2 title — source URL]
-- [Fill in after seeding: document 3 title — source URL]
+- Wikimedia Foundation Terms of Use (CC BY-SA) — https://foundation.wikimedia.org/wiki/Policy:Terms_of_Use
+- Netflix Terms of Use — https://help.netflix.com/legal/termsofuse
+- Standard Residential Lease Agreement template (FreeForms) — https://freeforms.com/lease/standard/
 
 PRIOR ART
 - Existing Terms-of-Service summarisers (e.g. ToS;DR — https://tosdr.org) explored similar
