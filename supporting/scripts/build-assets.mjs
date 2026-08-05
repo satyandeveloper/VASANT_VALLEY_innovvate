@@ -54,7 +54,9 @@ const browser = await chromium.launch({ channel: "chrome" });
 /* ------------------------------------------------------ 2. slides PDF */
 {
   const html = readFileSync(`${SITE}/index.html`, "utf8");
-  const deck = html.match(/<div class="deck">([\s\S]*?)<\/div>\s*<p class="label deck-hint"/);
+  // Match the deck by its leading class so extra classes on the element (it is
+  // also a numbered line) do not silently break the extraction.
+  const deck = html.match(/<div class="deck[^"]*">([\s\S]*?)<\/div>\s*<p class="label deck-hint/);
   if (!deck) throw new Error("could not locate the deck in index.html");
 
   const print = `<!doctype html>
@@ -71,12 +73,14 @@ const browser = await chromium.launch({ channel: "chrome" });
   /* Slides are sized by the page here, not by the deck's flex track. */
   .page .slide { flex: 1; aspect-ratio: auto; border: none; box-shadow: none;
                  padding: 64px 72px; }
-  .page .slide h3 { font-size: 2.6rem; }
+  .page .slide h3 { font-size: 2.7rem; }
   .page .slide .body { font-size: 1.15rem; }
+  .page .slide .eyebrow { font-size: 0.8rem; }
   .page .slide .big { font-size: 2.2rem; }
   .page .slide .cap, .page .slide .d { font-size: 1rem; }
-  .page .slide .v { font-size: 1.15rem; }
-  .page .slide .slide-no { right: 44px; top: 40px; font-size: 0.8rem; }
+  .page .slide .v { font-size: 1.2rem; }
+  .page .slide .k { font-size: 0.72rem; }
+  .page .slide .no { right: 44px; top: 40px; font-size: 0.8rem; }
 </style></head><body>
 ${deck[1].replace(/<article class="slide">/g, '<div class="page"><article class="slide">').replace(/<\/article>/g, "</article></div>")}
 </body></html>`;
