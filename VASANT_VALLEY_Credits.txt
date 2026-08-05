@@ -1,0 +1,35 @@
+I AGREE — The Fine Print Decoder
+Credits (every library, dataset, prior project, and AI-assisted tool used)
+
+FRAMEWORKS & LIBRARIES
+- Next.js (Vercel) — application framework — https://nextjs.org
+- React (Meta) — UI library — https://react.dev
+- Tailwind CSS — styling — https://tailwindcss.com
+- OpenAI Node SDK + OpenAI API (gpt-4o-mini) — document analysis — https://openai.com
+- Supabase (supabase-js, Postgres) — caching, public registry, history — https://supabase.com
+- Clerk (@clerk/nextjs) — optional sign-in — https://clerk.com
+- Mozilla Readability — readable-text extraction from URLs — https://github.com/mozilla/readability
+- jsdom — server-side DOM for Readability — https://github.com/jsdom/jsdom
+- next/og (Vercel) — shareable verdict images — https://vercel.com/docs/og-image-generation
+- Geist font (Vercel) — typography
+
+HOSTING
+- Vercel — deployment — https://vercel.com
+
+SAMPLE DOCUMENTS (real, public, credited)
+- [Fill in after seeding: document 1 title — source URL]
+- [Fill in after seeding: document 2 title — source URL]
+- [Fill in after seeding: document 3 title — source URL]
+
+PRIOR ART
+- Existing Terms-of-Service summarisers (e.g. ToS;DR — https://tosdr.org) explored similar
+  ground. Our contribution is the verification layer: every displayed quote is programmatically
+  confirmed verbatim against the source, unverifiable claims are demoted, and repeated documents
+  are recognised by fingerprint.
+
+AI-ASSISTED TOOLS (explicitly permitted by the rules)
+- Claude Code (Anthropic) — used to plan and write the application code.
+- OpenAI API — powers the in-app document analysis at runtime.
+
+DISCLAIMER
+This tool explains text; it does not replace legal advice.

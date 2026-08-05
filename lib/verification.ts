@@ -1,0 +1,125 @@
+/**
+ * The verification layer: every model quote is confirmed to exist in the
+ * source text (tolerating only whitespace/punctuation/quote-style differences)
+ * and mapped back to offsets in the ORIGINAL text for highlighting.
+ * Anything unconfirmed is never displayed as evidence.
+ */
+
+const CHAR_TABLE: Record<string, string> = {
+  "‘": "'",
+  "’": "'",
+  "‚": "'",
+  "“": '"',
+  "”": '"',
+  "„": '"',
+  "–": "-",
+  "—": "-",
+  "…": "...",
+  " ": " ",
+};
+
+const LETTER_OR_DIGIT = /[\p{L}\p{N}]/u;
+
+export interface NormDoc {
+  norm: string;
+  /** map[i] = index in the original text of the char that produced norm[i] */
+  map: number[];
+}
+
+/** Normalise text while recording, per output char, its source index. */
+export function normalizeWithMap(original: string): NormDoc {
+  const chars: string[] = [];
+  const map: number[] = [];
+  let lastWasSpace = true; // swallows leading whitespace
+  for (let i = 0; i < original.length; i++) {
+    let c = original[i];
+    c = CHAR_TABLE[c] ?? c;
+    c = c.normalize("NFKC");
+    // CHAR_TABLE can expand one char to several (e.g. ellipsis); treat each
+    for (const piece of c) {
+      if (/\s/.test(piece)) {
+        if (!lastWasSpace) {
+          chars.push(" ");
+          map.push(i);
+          lastWasSpace = true;
+        }
+        continue;
+      }
+      if (!LETTER_OR_DIGIT.test(piece)) continue; // drop punctuation
+      chars.push(piece.toLowerCase());
+      map.push(i);
+      lastWasSpace = false;
+    }
+  }
+  // trim a trailing space
+  if (chars.length && chars[chars.length - 1] === " ") {
+    chars.pop();
+    map.pop();
+  }
+  return { norm: chars.join(""), map };
+}
+
+function normalizeQuote(quote: string): string {
+  return normalizeWithMap(quote).norm;
+}
+
+export interface MatchResult {
+  verified: boolean;
+  start: number;
+  end: number;
+  exactQuote: string;
+}
+
+const NO_MATCH: MatchResult = { verified: false, start: 0, end: 0, exactQuote: "" };
+
+function offsetsFor(
+  doc: NormDoc,
+  original: string,
+  idx: number,
+  len: number
+): MatchResult {
+  const start = doc.map[idx];
+  let end = doc.map[idx + len - 1] + 1;
+  // extend over trailing punctuation/closing quotes so highlights look natural
+  while (end < original.length && /[.,;:!?)"'’”\]]/.test(original[end])) {
+    end++;
+  }
+  return { verified: true, start, end, exactQuote: original.slice(start, end) };
+}
+
+/**
+ * Find a model quote in the original document. Returns original-text offsets.
+ * Retry ladder: exact normalised match → trimmed core (models sometimes add a
+ * leading ellipsis or clip a word) → longest sentence alone.
+ */
+export function findQuoteInOriginal(
+  quote: string,
+  doc: NormDoc,
+  original: string
+): MatchResult {
+  const q = normalizeQuote(quote);
+  if (q.length < 10) return NO_MATCH; // too short to be meaningful evidence
+
+  let idx = doc.norm.indexOf(q);
+  if (idx !== -1) return offsetsFor(doc, original, idx, q.length);
+
+  // trimmed core
+  const core = q.slice(10, q.length - 10);
+  if (core.length >= 40) {
+    idx = doc.norm.indexOf(core);
+    if (idx !== -1) return offsetsFor(doc, original, idx, core.length);
+  }
+
+  // longest sentence alone
+  const sentences = quote
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => normalizeQuote(s))
+    .filter((s) => s.length >= 30)
+    .sort((a, b) => b.length - a.length);
+  for (const s of sentences) {
+    idx = doc.norm.indexOf(s);
+    if (idx !== -1) return offsetsFor(doc, original, idx, s.length);
+  }
+
+  return NO_MATCH;
+}
