@@ -45,6 +45,10 @@ export function buildSummary(flags: VerifiedFlag[]): string[] {
 export const QUOTE_GUARANTEE =
   "Every warning here quotes the document word for word, checked against the source.";
 
+/** The same claim, cut to fit a 1200x630 poster. Kept here so the two wordings
+ *  are edited together rather than drifting in separate files. */
+export const QUOTE_GUARANTEE_SHORT = "EVERY WARNING QUOTES THE DOCUMENT VERBATIM";
+
 export function copyText(headline: string, bullets: string[]): string {
   return [
     headline,

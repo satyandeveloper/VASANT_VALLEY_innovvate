@@ -3,16 +3,11 @@ import { auth } from "@clerk/nextjs/server";
 import { SignInButton } from "@clerk/nextjs";
 import { supabase } from "@/lib/supabase";
 import { unwrap, getLastFailure } from "@/lib/errors";
+import { VERDICT_PRESENTATION } from "@/lib/verdict";
+import type { Verdict } from "@/lib/types";
 import { DecodeAction, RegisterEmpty } from "@/components/Register";
 
 export const dynamic = "force-dynamic";
-
-const VERDICT_DOT: Record<string, string> = {
-  green: "bg-sage",
-  amber: "bg-canary-deep",
-  red: "bg-oxblood",
-  not_legal: "bg-ink-faint",
-};
 
 export default async function HistoryPage() {
   if (!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
@@ -36,7 +31,7 @@ export default async function HistoryPage() {
           explain="Decoding works without an account. Signing in only keeps a list of what you've already run."
           action={
             <SignInButton mode="modal">
-              <button className="inline-block border-2 border-ink bg-ink px-5 py-2.5 font-display text-xs font-bold uppercase tracking-wider text-paper transition-colors hover:border-ditto hover:bg-ditto">
+              <button className="btn">
                 Sign in
               </button>
             </SignInButton>
@@ -49,7 +44,7 @@ export default async function HistoryPage() {
   const db = supabase();
   let rows: {
     created_at: string;
-    analyses: { id: string; title: string; verdict: string } | null;
+    analyses: { id: string; title: string; verdict: Verdict } | null;
   }[] = [];
   if (db) {
     const data = unwrap(
@@ -99,7 +94,7 @@ export default async function HistoryPage() {
                 >
                   <span
                     className={`h-2.5 w-2.5 shrink-0 ${
-                      VERDICT_DOT[r.analyses!.verdict] ?? "bg-ink-faint"
+                      VERDICT_PRESENTATION[r.analyses!.verdict]?.dotClass ?? "bg-ink-faint"
                     }`}
                   />
                   <span className="flex-1 truncate text-[15px] text-ink">

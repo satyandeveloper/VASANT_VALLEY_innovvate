@@ -1,4 +1,5 @@
 import type { Verdict, VerifiedFlag } from "./types";
+import { CANARY_DEEP, INK_FAINT, OXBLOOD, SAGE } from "./palette";
 
 /**
  * Deterministic grade — computed only from VERIFIED flags, so nothing
@@ -41,3 +42,47 @@ export function severityCounts(flags: VerifiedFlag[]) {
     low: flags.filter((f) => f.severity === "low").length,
   };
 }
+
+/**
+ * How each verdict is presented, in one place.
+ *
+ * This was previously written out in four modules — the verdict card, the
+ * registry list, the history list and the share image — so renaming a stamp or
+ * retuning a colour meant four coordinated edits, and a miss showed up as the
+ * share image disagreeing with the card the reader was looking at. Keyed by
+ * `Verdict` so adding a member fails to compile rather than falling through to
+ * a default.
+ */
+export const VERDICT_PRESENTATION: Record<
+  Verdict,
+  { label: string; note: string; hex: string; textClass: string; dotClass: string }
+> = {
+  green: {
+    label: "Looks fair",
+    note: "Nothing here should surprise you.",
+    hex: SAGE,
+    textClass: "text-sage",
+    dotClass: "bg-sage",
+  },
+  amber: {
+    label: "Read carefully",
+    note: "Some terms are worth knowing before you agree.",
+    hex: CANARY_DEEP,
+    textClass: "text-canary-deep",
+    dotClass: "bg-canary-deep",
+  },
+  red: {
+    label: "Serious flags",
+    note: "This document takes more than you'd expect.",
+    hex: OXBLOOD,
+    textClass: "text-oxblood",
+    dotClass: "bg-oxblood",
+  },
+  not_legal: {
+    label: "Not a contract",
+    note: "This doesn't read like a terms document.",
+    hex: INK_FAINT,
+    textClass: "text-ink-faint",
+    dotClass: "bg-ink-faint",
+  },
+};

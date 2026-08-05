@@ -1,5 +1,10 @@
+import { readFileSync } from "node:fs";
+import { ImageResponse } from "next/og";
 import type { Analysis } from "@/lib/types";
 import { DISCLAIMER } from "@/lib/types";
+import { QUOTE_GUARANTEE_SHORT } from "@/lib/summary";
+import { INK, INK_FAINT, INK_SOFT, PAPER, SAGE } from "@/lib/palette";
+import { severityCounts, VERDICT_PRESENTATION } from "@/lib/verdict";
 
 /**
  * The share image — the only piece of this product that travels.
@@ -19,21 +24,13 @@ import { DISCLAIMER } from "@/lib/types";
  * read in a feed. It earns that because the texture is the subject.
  */
 
-const INK = "#24215c";
-const INK_SOFT = "#565398";
-const INK_FAINT = "#8b88b8";
-const PAPER = "#eef0f7";
-const OXBLOOD = "#8e2436";
-const SAGE = "#3f7a5e";
 
-const VERDICT: Record<string, { accent: string; label: string }> = {
-  green: { accent: SAGE, label: "Looks fair" },
-  amber: { accent: "#b98d12", label: "Read carefully" },
-  red: { accent: OXBLOOD, label: "Serious flags" },
-  not_legal: { accent: INK_FAINT, label: "Not a contract" },
-};
 
-/** The app's severity colours, at the alpha the results view marks clauses with. */
+/**
+ * Deliberately stronger than the marks in the results view (globals.css uses
+ * 22/62/18%). The image is read at thumbnail size, where a 22% tint disappears
+ * — the marks have to survive being scaled to a third of their size.
+ */
 const SEVERITY_TINT: Record<string, string> = {
   high: "rgba(142,36,54,0.30)",
   medium: "rgba(240,198,74,0.72)",
@@ -42,13 +39,16 @@ const SEVERITY_TINT: Record<string, string> = {
 
 type Segment = { text: string; tint?: string };
 
+/** How much of the document the left column can hold before it clips. */
+const EXCERPT_BUDGET = 2600;
+
 /**
  * Build a readable window of the document containing as many cited clauses as
  * will fit, and split it into plain and highlighted runs. Starting a little
  * before the first citation means the page opens mid-sentence the way a real
  * excerpt does, rather than always at the title.
  */
-export function excerptSegments(analysis: Analysis, budget = 2600): Segment[] {
+function excerptSegments(analysis: Analysis): Segment[] {
   const doc = analysis.docText ?? "";
   if (!doc) return [];
 
@@ -58,7 +58,7 @@ export function excerptSegments(analysis: Analysis, budget = 2600): Segment[] {
 
   const first = marks[0]?.start ?? 0;
   const start = Math.max(0, first - 260);
-  const end = Math.min(doc.length, start + budget);
+  const end = Math.min(doc.length, start + EXCERPT_BUDGET);
 
   const segs: Segment[] = [];
   let cursor = start;
@@ -81,7 +81,7 @@ export function excerptSegments(analysis: Analysis, budget = 2600): Segment[] {
  * document's paragraphing. Instead the runs are cut at line breaks and each
  * paragraph becomes its own wrapping row.
  */
-export function excerptLines(analysis: Analysis): Segment[][] {
+function excerptLines(analysis: Analysis): Segment[][] {
   const lines: Segment[][] = [[]];
   for (const seg of excerptSegments(analysis)) {
     const parts = seg.text.split("\n");
@@ -94,10 +94,9 @@ export function excerptLines(analysis: Analysis): Segment[][] {
 }
 
 export function ShareImage({ analysis }: { analysis: Analysis }) {
-  const v = VERDICT[analysis.verdict] ?? VERDICT.not_legal;
+  const v = VERDICT_PRESENTATION[analysis.verdict] ?? VERDICT_PRESENTATION.not_legal;
   const lines = excerptLines(analysis);
-  const counts = { high: 0, medium: 0, low: 0 };
-  for (const f of analysis.flags) counts[f.severity] += 1;
+  const counts = severityCounts(analysis.flags);
 
   return (
     <div
@@ -185,7 +184,7 @@ export function ShareImage({ analysis }: { analysis: Analysis }) {
             <div
               style={{
                 display: "flex",
-                border: `3px solid ${v.accent}`,
+                border: `3px solid ${v.hex}`,
                 padding: 3,
                 transform: "rotate(-2.4deg)",
               }}
@@ -193,8 +192,8 @@ export function ShareImage({ analysis }: { analysis: Analysis }) {
               <div
                 style={{
                   display: "flex",
-                  border: `1px solid ${v.accent}`,
-                  color: v.accent,
+                  border: `1px solid ${v.hex}`,
+                  color: v.hex,
                   fontSize: 34,
                   fontWeight: 800,
                   letterSpacing: 2,
@@ -242,7 +241,7 @@ export function ShareImage({ analysis }: { analysis: Analysis }) {
         }}
       >
         <div style={{ display: "flex", color: SAGE, letterSpacing: 1 }}>
-          EVERY WARNING QUOTES THE DOCUMENT VERBATIM
+          {QUOTE_GUARANTEE_SHORT}
         </div>
         <div style={{ display: "flex", color: INK_FAINT, marginLeft: "auto" }}>{DISCLAIMER}</div>
       </div>
@@ -251,42 +250,38 @@ export function ShareImage({ analysis }: { analysis: Analysis }) {
 }
 
 /**
- * Fonts, fetched once per instance. The image must never fail because a font
- * did not load, so every failure falls through to the system stack.
+ * Fonts, vendored and read from disk at module load.
+ *
+ * These were previously fetched per instance from Google's CSS API with a
+ * legacy user-agent — the only way to get a static TTF, since satori cannot
+ * parse woff2 and throws on the axis table of a variable font. That put three
+ * things outside this repo on the request path, and a single timeout cached an
+ * empty result for the life of the instance, silently rendering every later
+ * image in the wrong face. The bytes are 180KB; keeping them here is cheaper
+ * than any of that.
  */
-let fontCache: { name: string; data: ArrayBuffer; weight: 400 | 800 }[] | null = null;
+const FONTS = [
+  { name: "Archivo", file: "Archivo-ExtraBold.ttf", weight: 800 as const },
+  { name: "Courier", file: "CourierPrime-Regular.ttf", weight: 400 as const },
+].map((f) => ({
+  name: f.name,
+  weight: f.weight,
+  // `new URL(..., import.meta.url)` is the form Next's file tracing follows, so
+  // the fonts are bundled into the serverless function.
+  data: readFileSync(new URL(`./fonts/${f.file}`, import.meta.url)),
+}));
 
 /**
- * Google serves woff2 to modern browsers, which satori cannot parse, and the
- * families' repository files are variable fonts, which its parser also rejects
- * (it throws on the axis table). Asking the CSS API with a legacy user-agent
- * returns a static TTF instance, which is the one thing that works.
+ * Render the image. Owning the options here means callers — the route and the
+ * preview script — cannot disagree about size or fonts.
  */
-async function googleTtf(family: string, weight: number): Promise<ArrayBuffer | null> {
-  try {
-    const css = await fetch(
-      `https://fonts.googleapis.com/css2?family=${family}:wght@${weight}`,
-      { headers: { "User-Agent": "Mozilla/4.0" }, signal: AbortSignal.timeout(4000) }
-    );
-    if (!css.ok) return null;
-    const url = (await css.text()).match(/https:\/\/[^)]+\.ttf/)?.[0];
-    if (!url) return null;
-    const font = await fetch(url, { signal: AbortSignal.timeout(4000) });
-    return font.ok ? await font.arrayBuffer() : null;
-  } catch {
-    return null;
-  }
-}
-
-export async function shareFonts() {
-  if (fontCache) return fontCache;
-  const [archivo, courier] = await Promise.all([
-    googleTtf("Archivo", 800),
-    googleTtf("Courier+Prime", 400),
-  ]);
-  const fonts: { name: string; data: ArrayBuffer; weight: 400 | 800 }[] = [];
-  if (archivo) fonts.push({ name: "Archivo", data: archivo, weight: 800 });
-  if (courier) fonts.push({ name: "Courier", data: courier, weight: 400 });
-  fontCache = fonts;
-  return fonts;
+export function renderShareImage(analysis: Analysis) {
+  return new ImageResponse(<ShareImage analysis={analysis} />, {
+    width: 1200,
+    height: 630,
+    fonts: FONTS,
+    // The content is immutable for a given id, and re-rendering it costs a full
+    // text shaping pass. Without this next/og sends must-revalidate.
+    headers: { "cache-control": "public, max-age=31536000, immutable" },
+  });
 }

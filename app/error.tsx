@@ -50,13 +50,13 @@ export default function Error({
       <div className="mt-6 flex flex-wrap gap-3">
         <button
           onClick={() => retry()}
-          className="border-2 border-ink bg-ink px-5 py-2.5 font-display text-xs font-bold uppercase tracking-wider text-paper transition-colors hover:border-ditto hover:bg-ditto"
+          className="btn"
         >
           Try again
         </button>
         <Link
           href="/"
-          className="border-2 border-ink px-5 py-2.5 font-display text-xs font-bold uppercase tracking-wider text-ink transition-colors hover:bg-canary"
+          className="btn btn-quiet"
         >
           Decode a document
         </Link>

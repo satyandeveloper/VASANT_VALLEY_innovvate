@@ -4,11 +4,11 @@
  *   assets/i-agree-slides.pdf   the three slides, one per landscape page
  *   assets/poster.png           the video poster frame
  *
- * The print page is generated from index.html rather than duplicated, so the
- * PDF can never drift from the slides on the page.
+ * The PDF is produced from index.html itself rather than from a copy of it,
+ * so it cannot drift from the slides on the page.
  */
 import { chromium } from "playwright";
-import { readFileSync, writeFileSync, mkdirSync, copyFileSync } from "node:fs";
+import { mkdirSync, copyFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const ROOT = resolve(import.meta.dirname, "..");
@@ -53,50 +53,57 @@ const browser = await chromium.launch({ channel: "chrome" });
 
 /* ------------------------------------------------------ 2. slides PDF */
 {
-  const html = readFileSync(`${SITE}/index.html`, "utf8");
-  // Match the deck by its leading class so extra classes on the element (it is
-  // also a numbered line) do not silently break the extraction.
-  const deck = html.match(/<div class="deck[^"]*">([\s\S]*?)<\/div>\s*<p class="label deck-hint/);
-  if (!deck) throw new Error("could not locate the deck in index.html");
-
-  const print = `<!doctype html>
-<html lang="en"><head><meta charset="utf-8">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Courier+Prime:wght@400;700&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./styles.css">
-<style>
-  @page { size: 1600px 900px; margin: 0; }
-  body { background: #fff; }
-  .page { width: 1600px; height: 900px; display: flex; page-break-after: always; }
-  .page:last-child { page-break-after: auto; }
-  /* Slides are sized by the page here, not by the deck's flex track. */
-  .page .slide { flex: 1; aspect-ratio: auto; border: none; box-shadow: none;
-                 padding: 64px 72px; }
-  .page .slide h3 { font-size: 2.7rem; }
-  .page .slide .body { font-size: 1.15rem; }
-  .page .slide .eyebrow { font-size: 0.8rem; }
-  .page .slide .big { font-size: 2.2rem; }
-  .page .slide .cap, .page .slide .d { font-size: 1rem; }
-  .page .slide .v { font-size: 1.2rem; }
-  .page .slide .k { font-size: 0.72rem; }
-  .page .slide .no { right: 44px; top: 40px; font-size: 0.8rem; }
-</style></head><body>
-${deck[1].replace(/<article class="slide">/g, '<div class="page"><article class="slide">').replace(/<\/article>/g, "</article></div>")}
-</body></html>`;
-
-  writeFileSync(`${SITE}/_slides-print.html`, print);
-
+  // The page itself is the source: load index.html and reshape its DOM into one
+  // slide per printed page. Reusing the real document means the PDF inherits
+  // the same <head> — the same webfonts and the same stylesheet — so it cannot
+  // drift from the deck on the page. An earlier version scraped the deck out
+  // with a regex and restated the font links here; the regex broke the first
+  // time a class was added to the deck, and the restated fonts silently went
+  // stale when the packet was retypeset, printing the PDF in a fallback face.
   const ctx = await browser.newContext();
   const page = await ctx.newPage();
-  await page.goto(`file://${SITE}/_slides-print.html`, { waitUntil: "networkidle" });
+  await page.goto(`file://${SITE}/index.html`, { waitUntil: "networkidle" });
+
+  const slideCount = await page.evaluate(() => {
+    const slides = [...document.querySelectorAll(".deck .slide")];
+    if (!slides.length) throw new Error("no slides found in index.html");
+    const pages = document.createDocumentFragment();
+    for (const slide of slides) {
+      const page = document.createElement("div");
+      page.className = "page";
+      page.appendChild(slide); // moves it out of the deck
+      pages.appendChild(page);
+    }
+    document.body.replaceChildren(pages);
+    return slides.length;
+  });
+
+  // Page geometry only — everything else is inherited from the live stylesheet.
+  await page.addStyleTag({
+    content: `
+      @page { size: 1600px 900px; margin: 0; }
+      body { background: #fff; }
+      .page { width: 1600px; height: 900px; display: flex; page-break-after: always; }
+      .page:last-child { page-break-after: auto; }
+      .page .slide { flex: 1; aspect-ratio: auto; border: none; box-shadow: none;
+                     padding: 64px 72px; }
+      .page .slide h3 { font-size: 2.7rem; }
+      .page .slide .body { font-size: 1.15rem; }
+      .page .slide .eyebrow { font-size: 0.8rem; }
+      .page .slide .big { font-size: 2.2rem; }
+      .page .slide .cap, .page .slide .d { font-size: 1rem; }
+      .page .slide .v { font-size: 1.2rem; }
+      .page .slide .k { font-size: 0.72rem; }
+      .page .slide .no { right: 44px; top: 40px; font-size: 0.8rem; }
+    `,
+  });
   await page.waitForTimeout(700); // let webfonts settle before the PDF snapshot
   await page.pdf({
     path: `${OUT}/i-agree-slides.pdf`,
     width: "1600px",
     height: "900px",
     printBackground: true,
-    pageRanges: "1-3",
+    pageRanges: `1-${slideCount}`,
   });
   console.log("✓ i-agree-slides.pdf");
   await ctx.close();

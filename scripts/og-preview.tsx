@@ -8,8 +8,7 @@
  *   npx tsx scripts/og-preview.tsx [out.png]
  */
 import { writeFileSync } from "node:fs";
-import { ImageResponse } from "next/og";
-import { ShareImage, shareFonts } from "@/app/api/og/share-image";
+import { renderShareImage } from "@/app/api/og/share-image";
 import type { Analysis } from "@/lib/types";
 
 const DOC = `ACME CLOUD — TERMS OF SERVICE
@@ -44,14 +43,10 @@ const analysis: Analysis = {
 };
 
 async function main() {
-const fonts = await shareFonts();
-console.log("fonts loaded:", fonts.map((f) => f.name).join(", ") || "NONE (system fallback)");
-const res = new ImageResponse(<ShareImage analysis={analysis} />, {
-  width: 1200, height: 630, ...(fonts.length ? { fonts } : {}),
-});
-const buf = Buffer.from(await res.arrayBuffer());
-writeFileSync(process.argv[2] ?? "og-preview.png", buf);
-console.log("wrote og.png", buf.length, "bytes");
-
+  const out = process.argv[2] ?? "og-preview.png";
+  const buf = Buffer.from(await renderShareImage(analysis).arrayBuffer());
+  writeFileSync(out, buf);
+  console.log(`wrote ${out} (${buf.length} bytes)`);
 }
+
 main();

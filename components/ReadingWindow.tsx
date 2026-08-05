@@ -1,7 +1,3 @@
-"use client";
-
-import { useEffect, useRef, useState } from "react";
-
 /**
  * The wait, made honest.
  *
@@ -19,12 +15,28 @@ import { useEffect, useRef, useState } from "react";
  * phases are named because they genuinely happen in that order — read, scan,
  * verify — and the scroll is paced to look like reading, not to imply progress
  * it cannot measure.
+ *
+ * The motion is a CSS animation rather than a timer driving state. An earlier
+ * version ticked every 260ms and re-rendered the whole subtree to increment an
+ * integer, and read `scrollHeight` during render to size the scroll — an impure
+ * render that returned 0 on first paint. The keyframe translates by `-100%` of
+ * the element's own height instead, so nothing needs measuring, and
+ * `prefers-reduced-motion` is handled in CSS where it belongs.
  */
 
-const LINE_HEIGHT = 18;
-// Sized so the window stands in for the textarea it replaces without the
-// surrounding layout shifting.
-const VISIBLE_LINES = 10;
+const WINDOW_HEIGHT = 180;
+
+/**
+ * A paste can be 200,000 characters (MAX_CHARS). Only a few hundred lines ever
+ * scroll past in ten seconds, so putting the whole document in the DOM lays out
+ * tens of thousands of pixels inside a 180px clipped box for the entire wait.
+ */
+const VISIBLE_BUDGET = 6000;
+
+/** Long documents should not scroll faster, so pace by length and clamp. */
+function scanSeconds(chars: number) {
+  return Math.min(45, Math.max(12, chars / 90));
+}
 
 export function ReadingWindow({
   text,
@@ -37,24 +49,10 @@ export function ReadingWindow({
   step: number;
   steps: number;
 }) {
-  const [offset, setOffset] = useState(0);
-  const wrapRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) return;
-    // Paced at roughly a line a beat: fast enough to read as scanning, slow
-    // enough that the words are legible rather than a blur.
-    const t = setInterval(() => setOffset((o) => o + 1), 260);
-    return () => clearInterval(t);
-  }, []);
-
-  const total = wrapRef.current?.scrollHeight ?? 0;
-  const max = Math.max(0, total - VISIBLE_LINES * LINE_HEIGHT);
-  const y = max > 0 ? -((offset * LINE_HEIGHT) % (max + LINE_HEIGHT)) : 0;
+  const excerpt = text.length > VISIBLE_BUDGET ? text.slice(0, VISIBLE_BUDGET) : text;
 
   return (
-    <div className="mt-4 border border-rule bg-white">
+    <div className="border border-rule bg-white">
       {/* The single place status is reported. The field above already names
           this box "The document"; repeating that here would be a label doing
           a second job. */}
@@ -65,29 +63,19 @@ export function ReadingWindow({
       </div>
 
       <div
-        className="relative overflow-hidden"
-        style={{
-          height: VISIBLE_LINES * LINE_HEIGHT,
-          maskImage:
-            "linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent)",
-          WebkitMaskImage:
-            "linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent)",
-        }}
+        className="reading-window relative overflow-hidden"
+        style={{ height: WINDOW_HEIGHT }}
         aria-hidden="true"
       >
         <div
-          ref={wrapRef}
-          className="whitespace-pre-wrap px-3 font-type text-[11px] text-ink-soft transition-transform duration-500 ease-linear"
-          style={{ lineHeight: `${LINE_HEIGHT}px`, transform: `translateY(${y}px)` }}
+          className="reading-scan whitespace-pre-wrap px-3 font-type text-[11px] text-ink-soft"
+          style={{ lineHeight: "18px", animationDuration: `${scanSeconds(excerpt.length)}s` }}
         >
-          {text}
+          {excerpt}
         </div>
 
         {/* The scan rule: one moving element, sitting on the line being read. */}
-        <div
-          className="pointer-events-none absolute inset-x-0 bg-canary/45"
-          style={{ top: (VISIBLE_LINES / 2) * LINE_HEIGHT, height: LINE_HEIGHT }}
-        />
+        <div className="pointer-events-none absolute inset-x-0 top-[81px] h-[18px] bg-canary/45" />
       </div>
 
       {/* The window is decorative; the status is what gets announced. */}

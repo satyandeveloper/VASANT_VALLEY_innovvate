@@ -1,22 +1,19 @@
 "use client";
 
+import { INK, INK_FAINT, INK_SOFT, OXBLOOD, PAPER, RULE } from "@/lib/palette";
+
 /**
  * Last-resort boundary for failures in the root layout itself. This replaces
  * the root layout when active, so it must render its own <html>/<body> and
  * cannot rely on global styles — every value here is inline by necessity.
  *
+ * The hexes come from lib/palette.ts: it cannot use the stylesheet, but it can
+ * still import constants rather than typing the values out again.
+ *
  * The webfonts are gone too at this point, so it leans on Georgia and the
  * system monospace rather than system sans: closer to the product's serif and
  * typewriter voice than a default UI face would be, with nothing to load.
  */
-
-const INK = "#24215c";
-const INK_SOFT = "#565398";
-const INK_FAINT = "#8b88b8";
-const PAPER = "#eef0f7";
-const RULE = "#cfd3e6";
-const OXBLOOD = "#8e2436";
-
 export default function GlobalError({
   error,
   retry,

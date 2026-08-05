@@ -20,13 +20,13 @@ export default function NotFound() {
       <div className="mt-6 flex flex-wrap justify-center gap-3">
         <Link
           href="/"
-          className="border-2 border-ink bg-ink px-5 py-2.5 font-display text-xs font-bold uppercase tracking-wider text-paper transition-colors hover:border-ditto hover:bg-ditto"
+          className="btn"
         >
           Decode a document
         </Link>
         <Link
           href="/registry"
-          className="border-2 border-ink px-5 py-2.5 font-display text-xs font-bold uppercase tracking-wider text-ink transition-colors hover:bg-canary"
+          className="btn btn-quiet"
         >
           Browse the registry
         </Link>

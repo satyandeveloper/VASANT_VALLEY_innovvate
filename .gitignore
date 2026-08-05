@@ -49,6 +49,8 @@ supporting/assets/raw/
 supporting/assets/demo-film.mp4
 supporting/assets/*.png
 supporting/site/.vercel
+# Legacy build intermediate; the PDF is now produced from index.html in-browser
+supporting/site/_slides-print.html
 
 # Agent skill tooling (installed via skills.sh, not project source)
 .agents/

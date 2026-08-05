@@ -159,9 +159,7 @@ export function AnalyzeForm({ samples }: { samples: SampleChip[] }) {
             <button
               onClick={analyze}
               disabled={!canAnalyze || loading}
-              // Disabled reads as an empty outline waiting to be filled, rather
-              // than a washed-out solid that looks broken.
-              className="font-display text-sm font-bold uppercase tracking-wider border-2 border-ink bg-ink px-7 py-3 text-paper transition-colors hover:bg-ditto hover:border-ditto disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ink-faint disabled:border-rule disabled:hover:bg-transparent"
+              className="btn btn-lead"
             >
               {loading ? "Decoding…" : "Decode it"}
             </button>
@@ -213,11 +211,10 @@ export function AnalyzeForm({ samples }: { samples: SampleChip[] }) {
 
       {/* The header is sticky, so without a scroll margin the scroll below
           lands the verdict stamp and headline underneath it — hiding the
-          payoff at the moment it arrives. 96px matches the clause-highlight
-          rule in globals.css, so every programmatic scroll clears the header
-          by the same amount. */}
+          payoff at the moment it arrives. The offset is the --scroll-offset
+          token, shared with the clause-highlight rule in globals.css. */}
       {analysis && (
-        <div ref={resultsRef} className="scroll-mt-24">
+        <div ref={resultsRef} className="scroll-mt-(--scroll-offset)">
           <ResultView analysis={analysis} />
         </div>
       )}

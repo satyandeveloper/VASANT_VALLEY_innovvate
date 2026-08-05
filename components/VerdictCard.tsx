@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Analysis } from "@/lib/types";
-import { severityCounts } from "@/lib/verdict";
+import { severityCounts, VERDICT_PRESENTATION } from "@/lib/verdict";
 import { copyText, QUOTE_GUARANTEE } from "@/lib/summary";
 
 /**
@@ -10,31 +10,10 @@ import { copyText, QUOTE_GUARANTEE } from "@/lib/summary";
  * document that has been adjudicated. Colour comes from the carbon-copy set,
  * so red is an inky oxblood rather than a warning-light red.
  */
-const VERDICT_STYLES: Record<
-  Analysis["verdict"],
-  { color: string; stamp: string; note: string }
-> = {
-  green: { color: "text-sage", stamp: "Looks fair", note: "Nothing here should surprise you." },
-  amber: {
-    color: "text-canary-deep",
-    stamp: "Read carefully",
-    note: "Some terms are worth knowing before you agree.",
-  },
-  red: {
-    color: "text-oxblood",
-    stamp: "Serious flags",
-    note: "This document takes more than you'd expect.",
-  },
-  not_legal: {
-    color: "text-ink-faint",
-    stamp: "Not a contract",
-    note: "This doesn't read like a terms document.",
-  },
-};
 
 export function VerdictCard({ analysis }: { analysis: Analysis }) {
   const [copied, setCopied] = useState(false);
-  const style = VERDICT_STYLES[analysis.verdict];
+  const style = VERDICT_PRESENTATION[analysis.verdict];
   const counts = severityCounts(analysis.flags);
 
   async function onCopy() {
@@ -46,8 +25,8 @@ export function VerdictCard({ analysis }: { analysis: Analysis }) {
   return (
     <section className="border-2 border-ink bg-white">
       <div className="flex flex-col gap-5 border-b border-rule p-5 sm:flex-row sm:items-start sm:gap-7">
-        <div className={`shrink-0 ${style.color}`}>
-          <span className="stamp text-base sm:text-lg">{style.stamp}</span>
+        <div className={`shrink-0 ${style.textClass}`}>
+          <span className="stamp text-base sm:text-lg">{style.label}</span>
         </div>
         <div className="min-w-0 flex-1">
           <p className="field-label mb-1.5 truncate">{analysis.title}</p>
@@ -66,7 +45,7 @@ export function VerdictCard({ analysis }: { analysis: Analysis }) {
       <ul className="divide-y divide-rule">
         {analysis.summaryBullets.map((b, i) => (
           <li key={i} className="flex gap-3.5 px-5 py-3">
-            <span className={`mt-1 shrink-0 text-xs ${style.color}`}>■</span>
+            <span className={`mt-1 shrink-0 text-xs ${style.textClass}`}>■</span>
             <span className="text-[15px] leading-relaxed text-ink">{b}</span>
           </li>
         ))}

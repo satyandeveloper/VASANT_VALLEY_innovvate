@@ -30,6 +30,11 @@
   --font-display: var(--font-archivo), system-ui, sans-serif;
   --font-body: var(--font-newsreader), Georgia, serif;
   --font-type: var(--font-courier), ui-monospace, monospace;
+
+  /* How far a programmatic scroll must clear the sticky header. Both scroll
+     targets read this, so changing the header does not leave them disagreeing
+     with each other in separate files. */
+  --scroll-offset: 6rem;
 }
 
 body {
@@ -48,6 +53,57 @@ body {
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--color-ink-faint);
+  }
+
+  /* The action vocabulary. Two roles, and the size difference between them
+     means something: `.btn-lead` is the one deed a screen exists for, and there
+     is at most one per screen. This was previously hand-copied into six places
+     in three slightly different spellings, so the hierarchy existed only by
+     coincidence. `.btn-quiet` is declared after `.btn` so it wins on source
+     order at equal specificity. */
+  .btn {
+    display: inline-block;
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.625rem 1.25rem;
+    border: 2px solid var(--color-ink);
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+  }
+
+  .btn:hover {
+    background-color: var(--color-ditto);
+    border-color: var(--color-ditto);
+  }
+
+  .btn-quiet {
+    background-color: transparent;
+    color: var(--color-ink);
+  }
+
+  .btn-quiet:hover {
+    background-color: var(--color-canary);
+    border-color: var(--color-ink);
+    color: var(--color-ink);
+  }
+
+  /* The primary deed: larger, because it is not one action among several. */
+  .btn-lead {
+    font-size: 0.875rem;
+    padding: 0.75rem 1.75rem;
+  }
+
+  /* Reads as an empty outline waiting to be filled, rather than a washed-out
+     solid that looks broken. */
+  .btn:disabled {
+    background-color: transparent;
+    border-color: var(--color-rule);
+    color: var(--color-ink-faint);
+    cursor: not-allowed;
   }
 }
 
@@ -103,6 +159,39 @@ body {
   animation: sweep 620ms cubic-bezier(0.22, 0.61, 0.36, 1) 260ms both;
 }
 
+/* ---- The reading window, shown while an analysis runs ---- */
+
+.reading-window {
+  --reading-window-h: 180px;
+  /* Faded at both edges so the clip reads as a window onto a longer document
+     rather than as text cut off. */
+  mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent);
+}
+
+/* Percentages in `translate` resolve against the element's own height, so this
+   scrolls exactly to the end of the excerpt without anything measuring it. */
+@keyframes reading-scan {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(calc(-100% + var(--reading-window-h)));
+  }
+}
+
+.reading-scan {
+  animation-name: reading-scan;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reading-scan {
+    animation: none;
+  }
+}
+
 /* ---- Rubber stamp ---- */
 
 .stamp {
@@ -126,7 +215,7 @@ mark.flag-highlight {
   color: var(--color-ink);
   border-radius: 1px;
   padding: 0.05em 1px;
-  scroll-margin-top: 96px;
+  scroll-margin-top: var(--scroll-offset);
   cursor: pointer;
 }
 

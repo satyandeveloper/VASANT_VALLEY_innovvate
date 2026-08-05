@@ -1,20 +1,15 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { unwrap, getLastFailure } from "@/lib/errors";
+import { VERDICT_PRESENTATION } from "@/lib/verdict";
+import type { Verdict } from "@/lib/types";
 import { DecodeAction, RegisterEmpty } from "@/components/Register";
 
 export const dynamic = "force-dynamic";
 
-const VERDICT_DOT: Record<string, string> = {
-  green: "bg-sage",
-  amber: "bg-canary-deep",
-  red: "bg-oxblood",
-  not_legal: "bg-ink-faint",
-};
-
 export default async function RegistryPage() {
   const db = supabase();
-  let rows: { id: string; title: string; verdict: string; created_at: string }[] = [];
+  let rows: { id: string; title: string; verdict: Verdict; created_at: string }[] = [];
   if (db) {
     rows =
       unwrap(
@@ -65,7 +60,7 @@ export default async function RegistryPage() {
                 className="flex items-center gap-3.5 px-4 py-3 transition-colors hover:bg-canary/12"
               >
                 <span
-                  className={`h-2.5 w-2.5 shrink-0 ${VERDICT_DOT[r.verdict] ?? "bg-ink-faint"}`}
+                  className={`h-2.5 w-2.5 shrink-0 ${VERDICT_PRESENTATION[r.verdict]?.dotClass ?? "bg-ink-faint"}`}
                 />
                 <span className="flex-1 truncate text-[15px] text-ink">{r.title}</span>
                 <span className="field-label shrink-0">{r.verdict.replace("_", " ")}</span>

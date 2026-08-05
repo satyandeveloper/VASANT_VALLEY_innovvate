@@ -67,21 +67,10 @@ export function DecodeAction({ children = "Decode a document" }: { children?: st
   return (
     <Link
       href="/"
-      className="inline-block border-2 border-ink bg-ink px-5 py-2.5 font-display text-xs font-bold uppercase tracking-wider text-paper transition-colors hover:border-ditto hover:bg-ditto"
+      className="btn"
     >
       {children}
     </Link>
   );
 }
 
-export function RegisterHead({ columns }: { columns: string[] }) {
-  return (
-    <div className="flex items-center gap-3.5 border-2 border-b-0 border-ink bg-paper px-4 py-2">
-      {columns.map((c, i) => (
-        <span key={c} className={`field-label ${i === 0 ? "flex-1" : "shrink-0"}`}>
-          {c}
-        </span>
-      ))}
-    </div>
-  );
-}
