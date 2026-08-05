@@ -24,7 +24,11 @@ export function AnalyzeForm({ samples }: { samples: SampleChip[] }) {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [progressStep, setProgressStep] = useState(0);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{
+    message: string;
+    requestId?: string;
+    retryable?: boolean;
+  } | null>(null);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -53,15 +57,27 @@ export function AnalyzeForm({ samples }: { samples: SampleChip[] }) {
         body: JSON.stringify(tab === "paste" ? { text } : { url }),
         signal: AbortSignal.timeout(58_000),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         if (data.fallbackToPaste) setTab("paste");
-        setError(data.error ?? "Something went wrong. Please retry.");
+        setError({
+          message: data.error ?? "Something went wrong. Please retry.",
+          requestId: data.requestId,
+          retryable: data.retryable,
+        });
         return;
       }
       setAnalysis(data.analysis);
-    } catch {
-      setError("Analysis took too long or the connection dropped. Please retry.");
+    } catch (e) {
+      // A timeout and a dropped connection need different advice: retrying a
+      // 58s timeout with the same document will just time out again.
+      const timedOut = e instanceof DOMException && e.name === "TimeoutError";
+      setError({
+        message: timedOut
+          ? "That document took too long to analyse. Try a shorter section of it."
+          : "The connection dropped before the analysis finished. Please retry.",
+        retryable: !timedOut,
+      });
     } finally {
       setLoading(false);
     }
@@ -71,90 +87,106 @@ export function AnalyzeForm({ samples }: { samples: SampleChip[] }) {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="mb-3 flex gap-2">
-          <button
-            onClick={() => setTab("paste")}
-            className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
-              tab === "paste" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"
-            }`}
-          >
-            Paste text
-          </button>
-          <button
-            onClick={() => setTab("url")}
-            className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
-              tab === "url" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"
-            }`}
-          >
-            From a link
-          </button>
+      <section className="border-2 border-ink bg-white">
+        {/* Tabs as filing dividers rather than pills. */}
+        <div className="flex border-b-2 border-ink">
+          {(["paste", "url"] as const).map((t, i) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`field-label px-4 py-2.5 transition-colors ${
+                i === 0 ? "border-r-2 border-ink" : ""
+              } ${tab === t ? "bg-ink text-paper" : "text-ink-soft hover:bg-canary/25"}`}
+            >
+              {t === "paste" ? "Paste text" : "From a link"}
+            </button>
+          ))}
         </div>
 
-        {tab === "paste" ? (
-          <div>
-            <textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Paste a Terms of Service, privacy policy, rental agreement, or any consent text here…"
-              className="h-52 w-full resize-y rounded-xl border border-slate-300 p-3 text-sm focus:border-slate-500 focus:outline-none"
-            />
-            <p
-              className={`mt-1 text-right text-xs ${
-                text.length > MAX_CHARS ? "text-red-600" : "text-slate-400"
-              }`}
-            >
-              {text.length.toLocaleString()} / {MAX_CHARS.toLocaleString()} characters
-            </p>
-          </div>
-        ) : (
-          <input
-            type="url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://example.com/terms"
-            className="w-full rounded-xl border border-slate-300 p-3 text-sm focus:border-slate-500 focus:outline-none"
-          />
-        )}
+        <div className="p-5">
+          {tab === "paste" ? (
+            <div>
+              <label htmlFor="doc" className="field-label mb-2 block">
+                The document
+              </label>
+              <textarea
+                id="doc"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="Paste a Terms of Service, privacy policy, rental agreement, or any consent text here…"
+                className="h-52 w-full resize-y border border-rule bg-paper/40 p-3 font-type text-[13px] leading-relaxed text-ink placeholder:text-ink-faint focus:border-ditto focus:outline-none"
+              />
+              <p
+                className={`field-label mt-1.5 text-right ${
+                  text.length > MAX_CHARS ? "text-oxblood" : ""
+                }`}
+              >
+                {text.length.toLocaleString()} / {MAX_CHARS.toLocaleString()}
+              </p>
+            </div>
+          ) : (
+            <div>
+              <label htmlFor="url" className="field-label mb-2 block">
+                Link to the document
+              </label>
+              <input
+                id="url"
+                type="url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://example.com/terms"
+                className="w-full border border-rule bg-paper/40 p-3 font-type text-[13px] text-ink placeholder:text-ink-faint focus:border-ditto focus:outline-none"
+              />
+            </div>
+          )}
 
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <button
-            onClick={analyze}
-            disabled={!canAnalyze || loading}
-            className="rounded-xl bg-slate-900 px-6 py-2.5 font-semibold text-white transition hover:bg-slate-700 disabled:opacity-40"
-          >
-            {loading ? "Analysing…" : "Analyse"}
-          </button>
-          {loading && (
-            <span className="animate-pulse text-sm text-slate-500">
-              {PROGRESS_STEPS[progressStep]}
-            </span>
+          <div className="mt-4 flex flex-wrap items-center gap-4">
+            <button
+              onClick={analyze}
+              disabled={!canAnalyze || loading}
+              // Disabled reads as an empty outline waiting to be filled, rather
+              // than a washed-out solid that looks broken.
+              className="font-display text-sm font-bold uppercase tracking-wider border-2 border-ink bg-ink px-7 py-3 text-paper transition-colors hover:bg-ditto hover:border-ditto disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ink-faint disabled:border-rule disabled:hover:bg-transparent"
+            >
+              {loading ? "Decoding…" : "Decode it"}
+            </button>
+            {loading && (
+              // A real sequence, so it earns ordinal markers.
+              <span className="field-label animate-pulse">
+                {progressStep + 1}/{PROGRESS_STEPS.length} · {PROGRESS_STEPS[progressStep]}
+              </span>
+            )}
+          </div>
+
+          {error && (
+            <div className="mt-4 flex items-start justify-between gap-3 border-l-4 border-oxblood bg-oxblood/8 p-3.5">
+              <div>
+                <p className="text-sm leading-relaxed text-oxblood">{error.message}</p>
+                {error.requestId && <p className="field-label mt-1.5">Ref {error.requestId}</p>}
+              </div>
+              {/* Offer retry only when retrying could plausibly work — a hidden
+                  retry button beats one that reproduces the same failure. */}
+              {error.retryable !== false && (
+                <button
+                  onClick={analyze}
+                  className="field-label shrink-0 border border-oxblood px-3 py-1.5 text-oxblood transition-colors hover:bg-oxblood hover:text-white"
+                >
+                  Retry
+                </button>
+              )}
+            </div>
           )}
         </div>
 
-        {error && (
-          <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            <span>{error}</span>
-            <button
-              onClick={analyze}
-              className="shrink-0 rounded-lg border border-red-300 px-3 py-1 font-medium hover:bg-red-100"
-            >
-              Retry
-            </button>
-          </div>
-        )}
-
         {samples.length > 0 && (
-          <div className="mt-4 border-t border-slate-100 pt-3">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-              Or try a pre-analysed real document
-            </p>
+          <div className="border-t-2 border-ink px-5 py-4">
+            <p className="field-label mb-2.5">Already decoded — open one</p>
             <div className="flex flex-wrap gap-2">
               {samples.map((s) => (
                 <Link
                   key={s.id}
                   href={`/results/${s.id}`}
-                  className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-sm hover:border-slate-500"
+                  className="border border-rule px-3 py-1.5 font-type text-xs text-ink transition-colors hover:border-ditto hover:bg-canary/25"
                 >
                   {s.title}
                 </Link>

@@ -9,10 +9,24 @@ import {
   type VerifiedFlag,
 } from "@/lib/types";
 
-const SEVERITY_BADGE: Record<Severity, string> = {
-  high: "bg-red-100 text-red-700",
-  medium: "bg-amber-100 text-amber-700",
-  low: "bg-blue-100 text-blue-700",
+/**
+ * Severity is carried by a margin rule, the way a reviewer marks a contract —
+ * not by a coloured pill. The quote is set in the typewriter face because it is
+ * the document's own words; the explanation is in the body serif because that
+ * is the app speaking.
+ */
+// Left edge only — `border-oxblood` would recolour all four sides and fight
+// the `border-rule` outline.
+const SEVERITY_RULE: Record<Severity, string> = {
+  high: "border-l-oxblood",
+  medium: "border-l-canary-deep",
+  low: "border-l-ditto",
+};
+
+const SEVERITY_TEXT: Record<Severity, string> = {
+  high: "text-oxblood",
+  medium: "text-canary-deep",
+  low: "text-ditto",
 };
 
 function FlagCard({
@@ -27,24 +41,19 @@ function FlagCard({
   return (
     <button
       onClick={() => onSelect(index)}
-      className="w-full rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-slate-400"
+      className={`w-full border border-rule border-l-4 bg-white p-4 text-left transition-colors hover:bg-canary/10 ${SEVERITY_RULE[flag.severity]}`}
     >
-      <div className="mb-1 flex flex-wrap items-center gap-2">
-        <span
-          className={`rounded-full px-2 py-0.5 text-xs font-semibold uppercase ${SEVERITY_BADGE[flag.severity]}`}
-        >
-          {flag.severity}
+      <div className="mb-1.5 flex items-baseline gap-2.5">
+        <span className={`field-label ${SEVERITY_TEXT[flag.severity]}`}>{flag.severity}</span>
+        <span className="font-display text-[15px] font-bold leading-snug text-ink">
+          {flag.title}
         </span>
-        <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
-          ✓ Verified
-        </span>
-        <span className="font-semibold">{flag.title}</span>
       </div>
-      <p className="mb-2 text-sm text-slate-700">{flag.explanation}</p>
-      <blockquote className="border-l-2 border-slate-300 pl-2 text-xs italic text-slate-500">
-        “{flag.quote.length > 220 ? flag.quote.slice(0, 220) + "…" : flag.quote}”
+      <p className="text-[15px] leading-relaxed text-ink-soft">{flag.explanation}</p>
+      <blockquote className="mt-2.5 border-l-2 border-rule pl-3 font-type text-[11px] leading-relaxed text-ink">
+        {flag.quote.length > 220 ? flag.quote.slice(0, 220) + "…" : flag.quote}
       </blockquote>
-      <p className="mt-1 text-xs text-slate-400">Tap to see this clause in the document ↓</p>
+      <p className="field-label mt-2">Show me this clause →</p>
     </button>
   );
 }
@@ -59,23 +68,21 @@ export function FlagList({
   const [showUnverified, setShowUnverified] = useState(false);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {CATEGORIES.map((cat) => {
         const catFlags = analysis.flags
           .map((f, i) => ({ flag: f, index: i }))
           .filter(({ flag }) => flag.category === cat);
         return (
           <div key={cat}>
-            <h3 className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wide text-slate-500">
-              {CATEGORY_LABELS[cat]}
+            <h3 className="mb-2.5 flex items-baseline gap-2.5 border-b border-ink pb-1.5">
+              <span className="field-label text-ink">{CATEGORY_LABELS[cat]}</span>
               {catFlags.length === 0 && (
-                <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium normal-case text-green-700">
-                  clean
-                </span>
+                <span className="field-label text-sage">Clean</span>
               )}
             </h3>
             {catFlags.length > 0 && (
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 {catFlags.map(({ flag, index }) => (
                   <FlagCard key={index} flag={flag} index={index} onSelect={onSelectFlag} />
                 ))}
@@ -85,31 +92,28 @@ export function FlagList({
         );
       })}
 
+      {/* The pink copy: the one that needs a second pair of eyes. */}
       {analysis.unverified.length > 0 && (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
+        <div className="border border-dashed border-rose bg-rose/8 p-4">
           <button
             onClick={() => setShowUnverified((v) => !v)}
-            className="flex w-full items-center justify-between text-sm font-semibold text-slate-600"
+            className="flex w-full items-center justify-between gap-3 text-left"
           >
-            <span>
-              Needs human review ({analysis.unverified.length}) — couldn&apos;t verify the exact
-              clause
+            <span className="field-label text-ink">
+              Needs human review ({analysis.unverified.length}) — no verbatim match
             </span>
-            <span>{showUnverified ? "▲" : "▼"}</span>
+            <span className="font-type text-xs text-ink-soft">
+              {showUnverified ? "−" : "+"}
+            </span>
           </button>
           {showUnverified && (
-            <ul className="mt-3 space-y-2">
+            <ul className="mt-3 space-y-2.5">
               {analysis.unverified.map((f, i) => (
-                <li key={i} className="text-sm text-slate-600">
-                  <span
-                    className={`mr-2 rounded-full px-2 py-0.5 text-xs font-semibold uppercase ${SEVERITY_BADGE[f.severity]}`}
-                  >
+                <li key={i} className="text-sm leading-relaxed text-ink-soft">
+                  <span className={`field-label mr-2 ${SEVERITY_TEXT[f.severity]}`}>
                     {f.severity}
                   </span>
-                  <span className="font-medium">{f.title}</span> — {f.explanation}{" "}
-                  <span className="text-xs text-slate-400">
-                    (no verbatim quote found; treat with caution)
-                  </span>
+                  <span className="font-semibold text-ink">{f.title}</span> — {f.explanation}
                 </li>
               ))}
             </ul>

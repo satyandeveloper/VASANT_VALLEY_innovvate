@@ -5,11 +5,17 @@ import { DISCLAIMER } from "@/lib/types";
 
 export const runtime = "nodejs";
 
-const VERDICT_STYLES: Record<string, { bg: string; label: string }> = {
-  green: { bg: "#16a34a", label: "GREEN — looks fair" },
-  amber: { bg: "#d97706", label: "AMBER — read carefully" },
-  red: { bg: "#dc2626", label: "RED — serious flags" },
-  not_legal: { bg: "#475569", label: "NOT A TERMS DOCUMENT" },
+// Carbon-copy palette, matching globals.css. The share image is the artifact
+// that travels, so it carries the same ink as the app.
+const INK = "#24215c";
+const PAPER = "#eef0f7";
+const FAINT = "#8b88b8";
+
+const VERDICT_STYLES: Record<string, { accent: string; label: string }> = {
+  green: { accent: "#3f7a5e", label: "Looks fair" },
+  amber: { accent: "#b98d12", label: "Read carefully" },
+  red: { accent: "#8e2436", label: "Serious flags" },
+  not_legal: { accent: "#8b88b8", label: "Not a contract" },
 };
 
 export async function GET(req: NextRequest) {
@@ -28,8 +34,8 @@ export async function GET(req: NextRequest) {
           height: "100%",
           display: "flex",
           flexDirection: "column",
-          backgroundColor: "#0f172a",
-          color: "white",
+          backgroundColor: PAPER,
+          color: INK,
           fontFamily: "sans-serif",
         }}
       >
@@ -38,24 +44,42 @@ export async function GET(req: NextRequest) {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            backgroundColor: style.bg,
-            padding: "24px 48px",
+            borderBottom: `4px solid ${INK}`,
+            padding: "22px 48px",
           }}
         >
-          <div style={{ fontSize: 40, fontWeight: 700 }}>{style.label}</div>
-          <div style={{ fontSize: 28, fontWeight: 700 }}>I AGREE — Fine Print Decoder</div>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", padding: "36px 48px", flex: 1 }}>
-          <div style={{ fontSize: 30, color: "#94a3b8", marginBottom: 8 }}>
-            {analysis.title.slice(0, 70)}
+          <div style={{ fontSize: 26, fontWeight: 700, letterSpacing: 2 }}>
+            I AGREE — THE FINE PRINT DECODER
           </div>
-          <div style={{ fontSize: 40, fontWeight: 700, marginBottom: 28, lineHeight: 1.2 }}>
+          <div style={{ fontSize: 22, color: FAINT, letterSpacing: 2 }}>
+            {analysis.title.slice(0, 48).toUpperCase()}
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", padding: "40px 48px", flex: 1 }}>
+          {/* The stamp, rendered as a double-ruled box. */}
+          <div style={{ display: "flex", marginBottom: 26 }}>
+            <div
+              style={{
+                display: "flex",
+                border: `5px double ${style.accent}`,
+                color: style.accent,
+                fontSize: 34,
+                fontWeight: 700,
+                letterSpacing: 3,
+                padding: "10px 26px",
+                textTransform: "uppercase",
+              }}
+            >
+              {style.label}
+            </div>
+          </div>
+          <div style={{ fontSize: 44, fontWeight: 700, marginBottom: 26, lineHeight: 1.15 }}>
             {analysis.headline.slice(0, 110)}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {analysis.summaryBullets.slice(0, 5).map((b, i) => (
-              <div key={i} style={{ display: "flex", fontSize: 24, color: "#e2e8f0" }}>
-                <span style={{ color: style.bg, marginRight: 14 }}>●</span>
+            {analysis.summaryBullets.slice(0, 4).map((b, i) => (
+              <div key={i} style={{ display: "flex", fontSize: 24, color: INK }}>
+                <span style={{ color: style.accent, marginRight: 14 }}>■</span>
                 <span>{b.slice(0, 95)}</span>
               </div>
             ))}
@@ -64,10 +88,11 @@ export async function GET(req: NextRequest) {
         <div
           style={{
             display: "flex",
-            padding: "18px 48px",
-            fontSize: 20,
-            color: "#94a3b8",
-            borderTop: "1px solid #1e293b",
+            padding: "16px 48px",
+            fontSize: 19,
+            color: FAINT,
+            letterSpacing: 1,
+            borderTop: `4px solid ${INK}`,
           }}
         >
           {DISCLAIMER}

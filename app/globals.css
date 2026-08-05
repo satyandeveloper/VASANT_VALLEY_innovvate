@@ -1,36 +1,143 @@
 @import "tailwindcss";
 
-:root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-}
+/*
+  I AGREE — visual system.
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  Material: the carbon copy. The artifact of agreeing to something is the
+  duplicate contract you're handed — NCR paper sets (white / canary / pink)
+  written in carbon-transfer ink, which is violet-blue, never black. Every
+  colour here comes off that stack of paper.
+
+  Voice is carried by typeface, not decoration:
+    Courier    — the document's own words (verbatim quotes, the source text)
+    Newsreader — the decoder explaining in plain English
+    Archivo    — the verdict, stamped
+*/
+
+@theme {
+  --color-ink: #24215c;
+  --color-ink-soft: #565398;
+  --color-ink-faint: #8b88b8;
+  --color-ditto: #6e5bb8;
+  --color-canary: #f0c64a;
+  --color-canary-deep: #b98d12;
+  --color-rose: #d98895;
+  --color-oxblood: #8e2436;
+  --color-sage: #3f7a5e;
+  --color-paper: #eef0f7;
+  --color-rule: #cfd3e6;
+
+  --font-display: var(--font-archivo), system-ui, sans-serif;
+  --font-body: var(--font-newsreader), Georgia, serif;
+  --font-type: var(--font-courier), ui-monospace, monospace;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
 }
 
+/* Utility labels — the vocabulary of a form field, not a UI chip.
+   Declared in @layer components so a `text-*` utility can still override the
+   default colour; unlayered CSS would otherwise beat every Tailwind utility. */
+@layer components {
+  .field-label {
+    font-family: var(--font-type);
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+}
+
+/* ---- The signature: fine print, and a highlighter cutting through it ---- */
+
+.fineprint {
+  font-family: var(--font-type);
+  font-size: 6.5px;
+  line-height: 1.45;
+  text-align: justify;
+  hyphens: auto;
+  color: var(--color-ink);
+  opacity: 0.28;
+  user-select: none;
+}
+
+@media (min-width: 640px) {
+  .fineprint {
+    font-size: 7.5px;
+  }
+}
+
+/* The highlighter sweep. A pseudo-element behind the text so the words stay
+   fully legible rather than being tinted by an overlay. */
+.marker {
+  position: relative;
+  display: inline;
+  isolation: isolate;
+}
+
+.marker::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0.08em -0.18em 0.06em -0.18em;
+  background-color: var(--color-canary);
+  transform-origin: left center;
+  transform: scaleX(var(--sweep, 1));
+  /* Uneven edges — a hand-drawn stroke, not a rectangle. */
+  clip-path: polygon(0 6%, 100% 0, 99.4% 96%, 0.6% 100%);
+}
+
+@keyframes sweep {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.marker--animate::before {
+  animation: sweep 620ms cubic-bezier(0.22, 0.61, 0.36, 1) 260ms both;
+}
+
+/* ---- Rubber stamp ---- */
+
+.stamp {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 3px double currentColor;
+  border-radius: 3px;
+  padding: 0.45rem 1rem 0.4rem;
+  display: inline-block;
+  transform: rotate(-2.4deg);
+  opacity: 0.92;
+}
+
+/* ---- Cited clauses in the source document ---- */
+
 mark.flag-highlight {
-  background-color: rgb(254 240 138); /* amber-200 */
-  border-radius: 2px;
-  padding: 0 1px;
+  background-color: color-mix(in srgb, var(--color-canary) 62%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-canary-deep) 40%, transparent);
+  color: var(--color-ink);
+  border-radius: 1px;
+  padding: 0.05em 1px;
   scroll-margin-top: 96px;
   cursor: pointer;
 }
 
 mark.flag-highlight.severity-high {
-  background-color: rgb(254 202 202); /* red-200 */
+  background-color: color-mix(in srgb, var(--color-oxblood) 22%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-oxblood) 35%, transparent);
 }
 
 mark.flag-highlight.severity-low {
-  background-color: rgb(219 234 254); /* blue-200 */
+  background-color: color-mix(in srgb, var(--color-ditto) 18%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-ditto) 30%, transparent);
 }
 
 @keyframes flag-pulse {
@@ -40,12 +147,32 @@ mark.flag-highlight.severity-low {
   }
   25%,
   75% {
-    outline-color: rgb(239 68 68);
+    outline-color: var(--color-ditto);
   }
 }
 
 mark.flag-highlight.pulsing {
-  outline: 3px solid transparent;
+  outline: 2px solid transparent;
+  outline-offset: 3px;
+  animation: flag-pulse 1.6s ease-in-out;
+}
+
+/* ---- Quality floor ---- */
+
+:focus-visible {
+  outline: 2px solid var(--color-ditto);
   outline-offset: 2px;
-  animation: flag-pulse 2s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .marker--animate::before {
+    animation: none;
+  }
 }

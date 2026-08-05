@@ -5,6 +5,7 @@ import { normalizeWithMap, findQuoteInOriginal } from "./verification";
 import { computeVerdict, headlineFor } from "./verdict";
 import { buildSummary } from "./summary";
 import { supabase } from "./supabase";
+import { unwrap } from "./errors";
 import type {
   Analysis,
   RawFlag,
@@ -57,38 +58,45 @@ export function rowToAnalysis(row: DbRow, cached: boolean): Analysis {
 export async function getCached(text: string): Promise<Analysis | null> {
   const db = supabase();
   if (!db) return null;
-  try {
-    const { data } = await db
-      .from("analyses")
-      .select("*")
-      .eq("fingerprint", fingerprint(text))
-      .maybeSingle();
-    return data ? rowToAnalysis(data as DbRow, true) : null;
-  } catch {
-    return null; // cache read failure → fall through to live analysis
-  }
+  // A cache miss and a cache failure both fall through to live analysis, but
+  // only the latter is logged — an unreachable cache silently re-billing every
+  // request is exactly the kind of thing that should show up in the logs.
+  const data = unwrap("cache.read", await db
+    .from("analyses")
+    .select("*")
+    .eq("fingerprint", fingerprint(text))
+    .maybeSingle());
+  return data ? rowToAnalysis(data as DbRow, true) : null;
 }
 
 export async function getById(id: string): Promise<Analysis | null> {
   const db = supabase();
   if (!db) return null;
-  const { data } = await db.from("analyses").select("*").eq("id", id).maybeSingle();
+  const data = unwrap(
+    "analysis.get",
+    await db.from("analyses").select("*").eq("id", id).maybeSingle(),
+    { id }
+  );
   return data ? rowToAnalysis(data as DbRow, true) : null;
 }
 
 export async function recordHistory(userId: string, analysisId: string) {
   const db = supabase();
   if (!db) return;
-  try {
+  // Best-effort, but a persistent failure here means signed-in users silently
+  // lose their history — worth a log line rather than an empty catch.
+  unwrap(
+    "history.record",
     await db
       .from("user_history")
       .upsert(
         { user_id: userId, analysis_id: analysisId },
         { onConflict: "user_id,analysis_id", ignoreDuplicates: true }
-      );
-  } catch {
-    // history is best-effort
-  }
+      )
+      .select("id")
+      .maybeSingle(),
+    { analysisId }
+  );
 }
 
 /** Dedupe verified flags: same category + >50% offset overlap, or identical span. */
@@ -193,11 +201,14 @@ export async function runAnalysis(input: AnalyzeInput): Promise<Analysis> {
     createdAt: new Date().toISOString(),
   };
 
-  // Store (best-effort — a DB hiccup must not lose the analysis)
+  // Store (best-effort — a DB hiccup must not lose the analysis, but it must
+  // not be invisible either: without an id there is no share link or registry
+  // entry, and the user is never told why.)
   const db = supabase();
   if (db) {
-    try {
-      const { data } = await db
+    const stored = unwrap<{ id: string }>(
+      "analysis.store",
+      await db
         .from("analyses")
         .upsert(
           {
@@ -218,11 +229,9 @@ export async function runAnalysis(input: AnalyzeInput): Promise<Analysis> {
           { onConflict: "fingerprint" }
         )
         .select("id")
-        .single();
-      if (data?.id) analysis.id = data.id;
-    } catch {
-      // render from response payload; registry/history skip silently
-    }
+        .single()
+    );
+    if (stored?.id) analysis.id = stored.id;
   }
 
   if (analysis.id && input.userId) {

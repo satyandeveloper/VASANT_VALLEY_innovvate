@@ -58,10 +58,10 @@ export function DocumentViewer({
   return (
     <div
       ref={containerRef}
-      className="max-h-[70vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 text-sm leading-relaxed text-slate-700 shadow-sm"
+      className="max-h-[70vh] overflow-y-auto border-2 border-ink bg-white p-5 font-type text-[12px] leading-[1.7] text-ink"
     >
-      <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">
-        Original document — cited clauses highlighted
+      <h3 className="field-label mb-3 border-b border-rule pb-2">
+        The document itself — cited clauses marked
       </h3>
       <div className="whitespace-pre-wrap break-words">
         {segments.map((seg, i) =>

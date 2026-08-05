@@ -1,12 +1,30 @@
 import OpenAI from "openai";
 import type { SectionResult } from "./types";
+import { AppError } from "./errors";
 
-export const MODEL = "gpt-4o-mini";
+export const MODEL = process.env.ANALYSIS_MODEL?.trim() || "gpt-5.6-luna";
+
+/** Reasoning effort for the GPT-5 family. Ignored by older models. */
+const EFFORT = process.env.ANALYSIS_EFFORT?.trim() || "low";
+
+/**
+ * GPT-5-family reasoning models reject `temperature` (only the default 1) and
+ * `max_tokens` (renamed `max_completion_tokens`). Their reasoning tokens are
+ * also drawn from that same completion budget, so the cap has to clear the
+ * JSON output *plus* whatever thinking precedes it.
+ */
+const IS_REASONING = /^(gpt-5|o[134])/.test(MODEL);
 
 let _client: OpenAI | null = null;
 function client(): OpenAI {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error("OPENAI_API_KEY is not set");
+  if (!process.env.OPENAI_API_KEY?.trim()) {
+    throw new AppError({
+      code: "openai_bad_key",
+      status: 503,
+      userMessage:
+        "The analysis engine is misconfigured — the site owner needs to set an OpenAI API key. Cached and sample documents still work.",
+      detail: "OPENAI_API_KEY is not set",
+    });
   }
   _client ??= new OpenAI();
   return _client;
@@ -65,8 +83,9 @@ export async function analyzeSection(sectionText: string): Promise<SectionResult
   const response = await client().chat.completions.create(
     {
       model: MODEL,
-      temperature: 0,
-      max_tokens: 4096,
+      ...(IS_REASONING
+        ? { max_completion_tokens: 12_000, reasoning_effort: EFFORT as "low" }
+        : { temperature: 0, max_tokens: 4096 }),
       response_format: {
         type: "json_schema",
         json_schema: { name: "analysis", strict: true, schema: ANALYSIS_SCHEMA },
@@ -76,10 +95,18 @@ export async function analyzeSection(sectionText: string): Promise<SectionResult
         { role: "user", content: sectionText },
       ],
     },
-    { signal: AbortSignal.timeout(45_000) }
+    { signal: AbortSignal.timeout(90_000) }
   );
 
-  const message = response.choices[0]?.message;
+  const choice = response.choices[0];
+  const message = choice?.message;
+  // Running out of budget mid-JSON yields truncated content that would fail to
+  // parse with a misleading syntax error, so name the real cause.
+  if (choice?.finish_reason === "length") {
+    throw new Error(
+      "The analysis engine ran out of output budget on this section. Try a shorter document."
+    );
+  }
   if (!message || message.refusal || !message.content) {
     throw new Error("The analysis engine returned no result. Please retry.");
   }

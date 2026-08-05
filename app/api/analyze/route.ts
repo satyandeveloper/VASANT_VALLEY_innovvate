@@ -4,6 +4,14 @@ import { getCached, recordHistory, runAnalysis } from "@/lib/pipeline";
 import { checkRateLimit } from "@/lib/ratelimit";
 import { MAX_CHARS, MIN_CHARS } from "@/lib/types";
 import { extractFromUrl, ExtractError } from "@/lib/extract";
+import {
+  AppError,
+  classifyOpenAI,
+  clearFailure,
+  logError,
+  logInfo,
+  newRequestId,
+} from "@/lib/errors";
 
 export const maxDuration = 60;
 export const runtime = "nodejs";
@@ -13,11 +21,15 @@ function clerkConfigured() {
 }
 
 export async function POST(req: NextRequest) {
+  // Correlates the client-visible error, the server log line, and any report
+  // a user files about a failed analysis.
+  const requestId = newRequestId();
+
   let body: { text?: string; url?: string };
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request.", requestId }, { status: 400 });
   }
 
   let text = (body.text ?? "").trim();
@@ -33,11 +45,18 @@ export async function POST(req: NextRequest) {
       sourceType = "url";
       sourceUrl = body.url;
     } catch (e) {
-      const message =
-        e instanceof ExtractError
-          ? e.message
-          : "That site wouldn't let us read the page — paste the text instead.";
-      return NextResponse.json({ error: message, fallbackToPaste: true }, { status: 422 });
+      const expected = e instanceof ExtractError;
+      const message = expected
+        ? e.message
+        : "That site wouldn't let us read the page — paste the text instead.";
+      // An ExtractError is a normal outcome for a hostile page; anything else
+      // is a bug in the extractor and deserves a full log line.
+      if (expected) logInfo("extract.rejected", { requestId, reason: e.message });
+      else logError("extract.failed", e, { requestId });
+      return NextResponse.json(
+        { error: message, fallbackToPaste: true, requestId },
+        { status: 422 }
+      );
     }
   }
 
@@ -84,23 +103,27 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const started = Date.now();
     const analysis = await runAnalysis({ text, sourceType, sourceUrl, titleHint, userId });
-    return NextResponse.json({ analysis });
+    clearFailure("openai");
+    logInfo("analyze.ok", {
+      requestId,
+      chars: text.length,
+      sourceType,
+      verdict: analysis.verdict,
+      flags: analysis.flags.length,
+      stored: Boolean(analysis.id),
+      ms: Date.now() - started,
+    });
+    return NextResponse.json({ analysis, requestId });
   } catch (e) {
-    console.error("analysis failed:", e);
-    const msg = e instanceof Error ? e.message : "";
-    if (/credits|quota|billing/i.test(msg)) {
-      return NextResponse.json(
-        {
-          error:
-            "The AI account has run out of credits — the site owner needs to top up the OpenAI account. Cached and sample documents still work.",
-        },
-        { status: 503 }
-      );
-    }
+    // Classify from the SDK's structured fields rather than matching words in
+    // the message, which changes without notice.
+    const app = e instanceof AppError ? e : classifyOpenAI(e);
+    logError("analyze.failed", app, { requestId, chars: text.length, sourceType });
     return NextResponse.json(
-      { error: "Something went wrong during analysis. Please retry.", retryable: true },
-      { status: 502 }
+      { error: app.userMessage, code: app.code, retryable: app.retryable, requestId },
+      { status: app.status }
     );
   }
 }
