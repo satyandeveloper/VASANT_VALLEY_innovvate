@@ -1,11 +1,18 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 
 /**
  * Route-level error boundary. Next 16 passes `retry` (re-fetches and
  * re-renders the segment); `reset` only clears state without re-fetching and
  * so can't recover a failed Server Component.
+ *
+ * Kept deliberately quiet. The verdict stamp already carries this product's
+ * boldness and appears on three other screens; a fourth use would be
+ * decoration. What is worth designing here is the reference code — when
+ * something breaks it is the only handle anyone has, so it is set to be read
+ * aloud, transcribed or copied rather than squinted at.
  */
 export default function Error({
   error,
@@ -14,26 +21,64 @@ export default function Error({
   error: Error & { digest?: string };
   retry: () => void;
 }) {
+  const [copied, setCopied] = useState(false);
+
   useEffect(() => {
     console.error(JSON.stringify({ level: "error", scope: "render", digest: error.digest }));
   }, [error]);
 
+  async function copyRef() {
+    if (!error.digest) return;
+    await navigator.clipboard.writeText(error.digest);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
   return (
-    <div className="mx-auto max-w-lg py-12 text-center">
-      <h2 className="text-xl font-bold">This page didn&apos;t load</h2>
-      <p className="mt-2 text-sm text-slate-600">
-        Something went wrong on our side. Your documents are safe — nothing was lost.
+    <div className="mx-auto max-w-lg px-4 py-16">
+      <p className="field-label mb-2 text-oxblood">Error</p>
+      <h2 className="font-display text-2xl font-extrabold tracking-tight text-ink">
+        This page didn&apos;t load
+      </h2>
+      {/* Names whose fault it is, and answers the question actually being
+          asked: is my document gone? */}
+      <p className="mt-2 text-[15px] leading-relaxed text-ink-soft">
+        The fault is on our side, not with the document you sent. Nothing you decoded has been
+        lost.
       </p>
-      <button
-        onClick={() => retry()}
-        className="mt-5 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white"
-      >
-        Try again
-      </button>
+
+      <div className="mt-6 flex flex-wrap gap-3">
+        <button
+          onClick={() => retry()}
+          className="border-2 border-ink bg-ink px-5 py-2.5 font-display text-xs font-bold uppercase tracking-wider text-paper transition-colors hover:border-ditto hover:bg-ditto"
+        >
+          Try again
+        </button>
+        <Link
+          href="/"
+          className="border-2 border-ink px-5 py-2.5 font-display text-xs font-bold uppercase tracking-wider text-ink transition-colors hover:bg-canary"
+        >
+          Decode a document
+        </Link>
+      </div>
+
       {error.digest && (
-        <p className="mt-4 text-xs text-slate-400">
-          Reference: <code className="font-mono">{error.digest}</code>
-        </p>
+        <div className="mt-8 border border-rule bg-white">
+          <p className="field-label border-b border-rule px-3 py-1.5">
+            Quote this if you report it
+          </p>
+          <div className="flex items-center justify-between gap-3 px-3 py-2.5">
+            <code className="select-all font-type text-base tracking-wider text-ink">
+              {error.digest}
+            </code>
+            <button
+              onClick={copyRef}
+              className="field-label shrink-0 border border-ink px-2.5 py-1 text-ink transition-colors hover:bg-ink hover:text-paper"
+            >
+              {copied ? "Copied" : "Copy"}
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

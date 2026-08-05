@@ -211,8 +211,13 @@ export function AnalyzeForm({ samples }: { samples: SampleChip[] }) {
         )}
       </section>
 
+      {/* The header is sticky, so without a scroll margin the scroll below
+          lands the verdict stamp and headline underneath it — hiding the
+          payoff at the moment it arrives. 96px matches the clause-highlight
+          rule in globals.css, so every programmatic scroll clears the header
+          by the same amount. */}
       {analysis && (
-        <div ref={resultsRef}>
+        <div ref={resultsRef} className="scroll-mt-24">
           <ResultView analysis={analysis} />
         </div>
       )}

@@ -48,6 +48,9 @@ Rules:
 - 0 to 4 flags per category. Only flag what the text actually says.
 - If the text is not a legal/terms/policy/agreement document (e.g. a recipe, an article, random text), set is_legal_document to false and return zero flags.
 - suggested_title: a short human name for the document, e.g. "ExampleApp Terms of Service".
+- Write every title and explanation in English, even when the document is not
+  in English. Without this the model occasionally drops a non-English word into
+  an otherwise English sentence, which reads as a fault in the tool.
 - document_type: e.g. "terms_of_service", "privacy_policy", "rental_agreement", "other".`;
 
 const ANALYSIS_SCHEMA = {
