@@ -39,3 +39,18 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Supporting-files packet
+supporting/video/node_modules
+supporting/video/out
+# Capture intermediates; re-created by supporting/scripts/record.mjs
+supporting/assets/raw/
+# Render output; the committed copy is supporting/site/assets/demo-film.mp4
+supporting/assets/demo-film.mp4
+supporting/assets/*.png
+supporting/site/.vercel
+
+# Agent skill tooling (installed via skills.sh, not project source)
+.agents/
+.claude/
+skills-lock.json
