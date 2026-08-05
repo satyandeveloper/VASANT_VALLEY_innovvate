@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Analysis } from "@/lib/types";
 import { MAX_CHARS } from "@/lib/types";
 import { ResultView } from "./ResultView";
+import { ReadingWindow } from "./ReadingWindow";
 
 const PROGRESS_STEPS = [
   "Reading document…",
@@ -109,20 +110,34 @@ export function AnalyzeForm({ samples }: { samples: SampleChip[] }) {
               <label htmlFor="doc" className="field-label mb-2 block">
                 The document
               </label>
-              <textarea
-                id="doc"
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="Paste a Terms of Service, privacy policy, rental agreement, or any consent text here…"
-                className="h-52 w-full resize-y border border-rule bg-paper/40 p-3 font-type text-[13px] leading-relaxed text-ink placeholder:text-ink-faint focus:border-ditto focus:outline-none"
-              />
-              <p
-                className={`field-label mt-1.5 text-right ${
-                  text.length > MAX_CHARS ? "text-oxblood" : ""
-                }`}
-              >
-                {text.length.toLocaleString()} / {MAX_CHARS.toLocaleString()}
-              </p>
+              {/* While it runs, the box holding your document shows it being
+                  read instead. Same content, same place — no jump, and nothing
+                  important lands below the fold. */}
+              {loading && text.trim() ? (
+                <ReadingWindow
+                  text={text}
+                  phase={PROGRESS_STEPS[progressStep]}
+                  step={progressStep + 1}
+                  steps={PROGRESS_STEPS.length}
+                />
+              ) : (
+                <>
+                  <textarea
+                    id="doc"
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    placeholder="Paste a Terms of Service, privacy policy, rental agreement, or any consent text here…"
+                    className="h-52 w-full resize-y border border-rule bg-paper/40 p-3 font-type text-[13px] leading-relaxed text-ink placeholder:text-ink-faint focus:border-ditto focus:outline-none"
+                  />
+                  <p
+                    className={`field-label mt-1.5 text-right ${
+                      text.length > MAX_CHARS ? "text-oxblood" : ""
+                    }`}
+                  >
+                    {text.length.toLocaleString()} / {MAX_CHARS.toLocaleString()}
+                  </p>
+                </>
+              )}
             </div>
           ) : (
             <div>
@@ -150,13 +165,13 @@ export function AnalyzeForm({ samples }: { samples: SampleChip[] }) {
             >
               {loading ? "Decoding…" : "Decode it"}
             </button>
-            {loading && (
-              // A real sequence, so it earns ordinal markers.
-              <span className="field-label animate-pulse">
-                {progressStep + 1}/{PROGRESS_STEPS.length} · {PROGRESS_STEPS[progressStep]}
-              </span>
-            )}
           </div>
+
+          {/* Fetching a link has no document in hand yet, so there is nothing
+              real to show being read; inventing one would be theatre. */}
+          {loading && tab === "url" && (
+            <p className="field-label mt-4 animate-pulse">{PROGRESS_STEPS[progressStep]}</p>
+          )}
 
           {error && (
             <div className="mt-4 flex items-start justify-between gap-3 border-l-4 border-oxblood bg-oxblood/8 p-3.5">
