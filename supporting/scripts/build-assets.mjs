@@ -1,8 +1,8 @@
 /**
  * Build the packet's static assets:
- *   assets/prototype.png        a sharp screenshot of a real analysis
- *   assets/i-agree-slides.pdf   the three slides, one per landscape page
- *   assets/poster.png           the video poster frame
+ *   assets/SATYA_SCHOOL_Prototype_Screenshot.png   a sharp screenshot of a real analysis
+ *   assets/SATYA_SCHOOL_Presentation.pdf          the three slides, one per landscape page
+ *   assets/SATYA_SCHOOL_Video_Poster.png          the video poster frame
  *
  * The PDF is produced from index.html itself rather than from a copy of it,
  * so it cannot drift from the slides on the page.
@@ -65,8 +65,8 @@ if (wants("prototype")) {
     if (el) el.scrollIntoView({ block: "center" });
   });
   await page.waitForTimeout(900);
-  await page.screenshot({ path: `${OUT}/prototype.png` });
-  console.log("✓ prototype.png");
+  await page.screenshot({ path: `${OUT}/SATYA_SCHOOL_Prototype_Screenshot.png` });
+  console.log("✓ SATYA_SCHOOL_Prototype_Screenshot.png");
   await ctx.close();
 }
 
@@ -118,13 +118,13 @@ if (wants("slides")) {
   });
   await page.waitForTimeout(700); // let webfonts settle before the PDF snapshot
   await page.pdf({
-    path: `${OUT}/i-agree-slides.pdf`,
+    path: `${OUT}/SATYA_SCHOOL_Presentation.pdf`,
     width: "1600px",
     height: "900px",
     printBackground: true,
     pageRanges: `1-${slideCount}`,
   });
-  console.log("✓ i-agree-slides.pdf");
+  console.log("✓ SATYA_SCHOOL_Presentation.pdf");
   await ctx.close();
 }
 
@@ -132,6 +132,6 @@ if (browser) await browser.close();
 
 /* ------------------------------------------------------- 3. video copy */
 if (wants("video")) {
-  copyFileSync(`${ROOT}/assets/demo-film.mp4`, `${OUT}/demo-film.mp4`);
-  console.log("✓ demo-film.mp4 copied");
+  copyFileSync(`${ROOT}/assets/demo-film.mp4`, `${OUT}/SATYA_SCHOOL_Demonstration_Video.mp4`);
+  console.log("✓ SATYA_SCHOOL_Demonstration_Video.mp4 copied");
 }

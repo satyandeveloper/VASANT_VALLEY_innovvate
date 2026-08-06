@@ -302,7 +302,14 @@
         <p class="field-label stamped">Scroll sideways for all three slides</p>
 
         <div class="acts">
-          <a class="btn btn-quiet" href="./assets/i-agree-slides.pdf" download
+          <!-- The download name is stated rather than inherited from the path.
+               Submission rules require every file to carry the school prefix,
+               and an explicit value keeps that true even if the asset is ever
+               renamed or served from somewhere else. -->
+          <a
+            class="btn btn-quiet"
+            href="./assets/SATYA_SCHOOL_Presentation.pdf"
+            download="SATYA_SCHOOL_Presentation.pdf"
             >Download the slides</a
           >
         </div>
@@ -323,7 +330,7 @@
         <a href="https://innovvate.devjindal.me" aria-label="Open the live prototype">
           <img
             class="shot"
-            src="./assets/prototype.png"
+            src="./assets/SATYA_SCHOOL_Prototype_Screenshot.png"
             alt="The prototype: risk flags on the left, the source document on the right with every cited clause highlighted."
             loading="lazy"
           />
@@ -350,14 +357,23 @@
           </div>
         </div>
 
-        <video controls preload="metadata" poster="./assets/poster.png" playsinline>
-          <source src="./assets/demo-film.mp4" type="video/mp4" />
+        <video controls preload="metadata" poster="./assets/SATYA_SCHOOL_Video_Poster.png" playsinline>
+          <source src="./assets/SATYA_SCHOOL_Demonstration_Video.mp4" type="video/mp4" />
           This browser cannot play embedded video.
-          <a href="./assets/demo-film.mp4">Download the demonstration video.</a>
+          <a
+            href="./assets/SATYA_SCHOOL_Demonstration_Video.mp4"
+            download="SATYA_SCHOOL_Demonstration_Video.mp4"
+            >Download the demonstration video.</a
+          >
         </video>
 
         <div class="acts">
-          <a class="btn btn-quiet" href="./assets/demo-film.mp4" download>Download the video</a>
+          <a
+            class="btn btn-quiet"
+            href="./assets/SATYA_SCHOOL_Demonstration_Video.mp4"
+            download="SATYA_SCHOOL_Demonstration_Video.mp4"
+            >Download the video</a
+          >
         </div>
       </section>
 
@@ -405,12 +421,12 @@
                 <td class="desc">
                   1080p MP4, composed in Remotion from a real recorded session.
                 </td>
-                <td><a href="./assets/demo-film.mp4">assets/demo-film.mp4</a></td>
+                <td><a href="./assets/SATYA_SCHOOL_Demonstration_Video.mp4">assets/SATYA_SCHOOL_Demonstration_Video.mp4</a></td>
               </tr>
               <tr>
                 <td class="item">Slides</td>
                 <td class="desc">The three slides above, as a printable PDF.</td>
-                <td><a href="./assets/i-agree-slides.pdf">assets/i-agree-slides.pdf</a></td>
+                <td><a href="./assets/SATYA_SCHOOL_Presentation.pdf">assets/SATYA_SCHOOL_Presentation.pdf</a></td>
               </tr>
               <tr>
                 <td class="item">Video source</td>
@@ -433,6 +449,18 @@
                   <a
                     href="https://github.com/satyandeveloper/VASANT_VALLEY_innovvate/tree/main/scripts/samples"
                     >scripts/samples/</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="item">Credits</td>
+                <td class="desc">
+                  Every library, dataset, prior project and AI-assisted tool used to build this.
+                </td>
+                <td>
+                  <a
+                    href="https://github.com/satyandeveloper/VASANT_VALLEY_innovvate/blob/main/SATYA_SCHOOL_Credits.txt"
+                    >SATYA_SCHOOL_Credits.txt</a
                   >
                 </td>
               </tr>
