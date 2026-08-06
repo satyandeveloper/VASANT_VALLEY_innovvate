@@ -138,9 +138,31 @@ async function main() {
   }
 
   // --- clean up ------------------------------------------------------------
+  // Verified rather than assumed. request_log grants select and insert but
+  // deliberately no delete — a delete policy would let any visitor wipe their
+  // own quota — so under the publishable key PostgREST filters this delete to
+  // zero rows and reports success. Counting afterwards is the only way to know
+  // whether anything actually went, and claiming a cleanup that did not happen
+  // is worse than admitting one that could not.
   const { error: cleanup } = await db.from("request_log").delete().in("subject", subjects);
-  if (cleanup) console.warn(`! could not clean up test rows: ${cleanup.message}`);
-  else console.log(`\ncleaned up ${subjects.length} test subjects`);
+  const { count: left } = await db
+    .from("request_log")
+    .select("*", { count: "exact", head: true })
+    .in("subject", subjects);
+
+  if (cleanup) {
+    console.warn(`\n! cleanup failed: ${cleanup.message}`);
+  } else if (left) {
+    console.warn(
+      `\n! ${left} test row(s) remain — the delete was filtered by RLS.\n` +
+        `  Remove them with:\n` +
+        `  npx supabase db query --linked "delete from request_log where subject in (${subjects
+          .map((s) => `'${s}'`)
+          .join(", ")});"`
+    );
+  } else {
+    console.log(`\ncleaned up ${subjects.length} test subjects`);
+  }
 
   console.log(failures === 0 ? "\nAll checks passed." : `\n${failures} check(s) FAILED.`);
   process.exit(failures === 0 ? 0 : 1);
