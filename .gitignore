@@ -52,6 +52,9 @@ supporting/site/.vercel
 # Legacy build intermediate; the PDF is now produced from index.html in-browser
 supporting/site/_slides-print.html
 
+# Supabase CLI's per-machine link state (project ref, pooler URL, versions)
+supabase/.temp/
+
 # Agent skill tooling (installed via skills.sh, not project source)
 .agents/
 .claude/

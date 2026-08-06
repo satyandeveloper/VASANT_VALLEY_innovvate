@@ -31,12 +31,23 @@ create table if not exists user_history (
 
 create index if not exists user_history_user_idx on user_history (user_id, created_at desc);
 
+-- One row per live AI call. Two questions are asked of it: how many calls this
+-- subject has made in the last 30 days (the allowance), and how many this IP
+-- has made in the last 10 minutes (the abuse floor). One insert answers both,
+-- so there is no second table.
 create table if not exists request_log (
   ip_hash text not null,
   created_at timestamptz not null default now()
 );
 
+-- Added after the table shipped: existing deployments have the table without
+-- this column, and `add column if not exists` is what carries them forward.
+-- 'anon:<visitor-cookie-uuid>' or 'user:<clerk-user-id>'. Nullable because
+-- rows written before the quota existed have no subject to name.
+alter table request_log add column if not exists subject text;
+
 create index if not exists request_log_idx on request_log (ip_hash, created_at);
+create index if not exists request_log_subject_idx on request_log (subject, created_at desc);
 
 alter table analyses enable row level security;
 alter table user_history enable row level security;

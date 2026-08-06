@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getCached, recordHistory, runAnalysis } from "@/lib/pipeline";
-import { checkRateLimit } from "@/lib/ratelimit";
+import { checkAllowance, USER_LIMIT, type Refusal } from "@/lib/ratelimit";
+import { visitorId } from "@/lib/visitor";
 import { MAX_CHARS, MIN_CHARS } from "@/lib/types";
 import { extractFromUrl, ExtractError } from "@/lib/extract";
 import {
@@ -18,6 +19,45 @@ export const runtime = "nodejs";
 
 function clerkConfigured() {
   return Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+}
+
+/** "4 September" — a date a person can act on, not an ISO timestamp. */
+function formatReset(iso: string): string {
+  return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long" }).format(new Date(iso));
+}
+
+/**
+ * Turn a refusal into something the reader can do something about.
+ *
+ * The anonymous message only advertises signing in when there is actually a
+ * sign-in to offer — Clerk is optional in this app, and promising an account
+ * that doesn't exist is worse than saying nothing. Without it, the reader gets
+ * the reset date instead, which is the only true thing left to tell them.
+ */
+function refusal(limit: Refusal, requestId: string) {
+  if (limit.reason === "burst") {
+    return NextResponse.json(
+      {
+        error: "You're going fast — try again in a few minutes.",
+        code: "rate_limited",
+        retryable: true,
+        requestId,
+      },
+      { status: 429 }
+    );
+  }
+
+  const resets = limit.resetAt ? ` Your next one unlocks on ${formatReset(limit.resetAt)}.` : "";
+  const anon = limit.kind === "anon";
+  const error =
+    anon && clerkConfigured()
+      ? `That's all ${limit.limit} free analyses for this month. Sign in and you get ${USER_LIMIT}.`
+      : `You've used all ${limit.limit} analyses for this month.${resets}`;
+
+  return NextResponse.json(
+    { error, code: anon ? "quota_anon" : "quota_user", retryable: false, requestId },
+    { status: 429 }
+  );
 }
 
 export async function POST(req: NextRequest) {
@@ -94,12 +134,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ analysis: cached });
   }
 
+  // Metered only past this point: everything above either failed validation or
+  // was served from cache, and neither costs a model call.
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  if (!(await checkRateLimit(ip))) {
-    return NextResponse.json(
-      { error: "You're going fast — try again in a few minutes." },
-      { status: 429 }
-    );
+  const subject = userId
+    ? ({ kind: "user", id: userId } as const)
+    : ({ kind: "anon", id: await visitorId() } as const);
+  const allowance = await checkAllowance(subject, ip);
+  if (!allowance.ok) {
+    logInfo("analyze.refused", { requestId, reason: allowance.reason, kind: subject.kind });
+    return refusal(allowance, requestId);
   }
 
   try {

@@ -24,6 +24,11 @@ export type ErrorCode =
   | "supabase_schema_missing"
   | "supabase_forbidden"
   | "supabase_unavailable"
+  // allowance — see lib/ratelimit.ts. Distinct codes because the client acts
+  // on them differently: only `quota_anon` has a way out worth offering.
+  | "quota_anon"
+  | "quota_user"
+  | "rate_limited"
   // generic
   | "bad_request"
   | "internal";

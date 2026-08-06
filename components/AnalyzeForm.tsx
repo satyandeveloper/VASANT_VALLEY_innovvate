@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { SignInButton } from "@clerk/nextjs";
 import type { Analysis } from "@/lib/types";
 import { MAX_CHARS } from "@/lib/types";
 import { ResultView } from "./ResultView";
@@ -12,6 +13,10 @@ const PROGRESS_STEPS = [
   "Scanning for risks…",
   "Verifying every quote against the source…",
 ];
+
+/* Clerk is optional in this app, and <SignInButton> throws outside a
+   <ClerkProvider>. The layout mounts the provider on this same condition. */
+const clerkConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
 export interface SampleChip {
   id: string;
@@ -27,6 +32,7 @@ export function AnalyzeForm({ samples }: { samples: SampleChip[] }) {
   const [progressStep, setProgressStep] = useState(0);
   const [error, setError] = useState<{
     message: string;
+    code?: string;
     requestId?: string;
     retryable?: boolean;
   } | null>(null);
@@ -63,6 +69,7 @@ export function AnalyzeForm({ samples }: { samples: SampleChip[] }) {
         if (data.fallbackToPaste) setTab("paste");
         setError({
           message: data.error ?? "Something went wrong. Please retry.",
+          code: data.code,
           requestId: data.requestId,
           retryable: data.retryable,
         });
@@ -177,15 +184,26 @@ export function AnalyzeForm({ samples }: { samples: SampleChip[] }) {
                 <p className="text-sm leading-relaxed text-oxblood">{error.message}</p>
                 {error.requestId && <p className="field-label mt-1.5">Ref {error.requestId}</p>}
               </div>
-              {/* Offer retry only when retrying could plausibly work — a hidden
-                  retry button beats one that reproduces the same failure. */}
-              {error.retryable !== false && (
-                <button
-                  onClick={analyze}
-                  className="field-label shrink-0 border border-oxblood px-3 py-1.5 text-oxblood transition-colors hover:bg-oxblood hover:text-white"
-                >
-                  Retry
-                </button>
+              {/* Running out of the free allowance is the one refusal with a
+                  way out, so it gets the action instead of a retry that would
+                  only be refused again. */}
+              {error.code === "quota_anon" && clerkConfigured ? (
+                <SignInButton mode="modal">
+                  <button className="field-label shrink-0 border border-oxblood px-3 py-1.5 text-oxblood transition-colors hover:bg-oxblood hover:text-white">
+                    Sign in
+                  </button>
+                </SignInButton>
+              ) : (
+                /* Offer retry only when retrying could plausibly work — a hidden
+                   retry button beats one that reproduces the same failure. */
+                error.retryable !== false && (
+                  <button
+                    onClick={analyze}
+                    className="field-label shrink-0 border border-oxblood px-3 py-1.5 text-oxblood transition-colors hover:bg-oxblood hover:text-white"
+                  >
+                    Retry
+                  </button>
+                )
               )}
             </div>
           )}
