@@ -48,25 +48,39 @@ export async function extractFromUrl(
     return { text: html.trim(), title: url.hostname };
   }
 
-  // Lazy imports keep jsdom out of every other serverless function bundle.
-  const [{ JSDOM }, { Readability }] = await Promise.all([
-    import("jsdom"),
+  // linkedom rather than jsdom, and the difference is not preference.
+  //
+  // jsdom sits on Next's default serverExternalPackages list, so it is not
+  // bundled — the serverless runtime require()s it natively. Its dependency
+  // tree now carries several ESM-only packages (@exodus/bytes via
+  // html-encoding-sniffer, @csstools/* via @asamuzakjp/css-color), and a CJS
+  // require() of those throws ERR_REQUIRE_ESM. Every HTML link failed in
+  // production with "that site wouldn't let us read the page" while working
+  // locally, because a bundler resolves those imports and the external loader
+  // cannot. Pinning around one offender only surfaced the next.
+  //
+  // linkedom is not on that list, so it is bundled like any other dependency
+  // and the whole class of failure goes away. It is also a far lighter parser,
+  // which a function that only wants text out of a page should prefer anyway.
+  const [{ parseHTML }, { Readability }] = await Promise.all([
+    import("linkedom"),
     import("@mozilla/readability"),
   ]);
 
   try {
-    const dom = new JSDOM(html, { url: url.href });
-    const article = new Readability(dom.window.document).parse();
+    const { document } = parseHTML(html);
+    const article = new Readability(document as never).parse();
     let text = article?.textContent?.trim() ?? "";
-    let title = article?.title || dom.window.document.title || url.hostname;
+    let title = article?.title || document.title || url.hostname;
     if (text.length < 300) {
       // Readability gave up — fall back to stripped body text
-      const doc = dom.window.document;
-      doc.querySelectorAll("script,style,nav,header,footer,noscript").forEach((el) =>
-        el.remove()
-      );
-      text = (doc.body?.textContent ?? "").replace(/\n{3,}/g, "\n\n").trim();
-      title = doc.title || url.hostname;
+      for (const el of [
+        ...document.querySelectorAll("script,style,nav,header,footer,noscript"),
+      ]) {
+        el.remove();
+      }
+      text = (document.body?.textContent ?? "").replace(/\n{3,}/g, "\n\n").trim();
+      title = document.title || url.hostname;
     }
     if (text.length < 300) throw new ExtractError(FRIENDLY_ERROR);
     return { text, title };
