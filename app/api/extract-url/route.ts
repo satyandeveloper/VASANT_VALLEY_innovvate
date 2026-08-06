@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { extractFromUrl, ExtractError } from "@/lib/extract";
+import { extractFromUrl, ExtractError } from "@/lib/documents/extract";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;

@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
-import { unwrap, getLastFailure } from "@/lib/errors";
-import { VERDICT_PRESENTATION } from "@/lib/verdict";
+import { supabase } from "@/lib/platform/supabase";
+import { unwrap, getLastFailure } from "@/lib/platform/errors";
+import { VERDICT_PRESENTATION } from "@/lib/analysis/verdict";
 import type { Verdict } from "@/lib/types";
 import { DecodeAction, RegisterEmpty } from "@/components/Register";
 

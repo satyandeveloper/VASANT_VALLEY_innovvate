@@ -65,7 +65,18 @@ export function newRequestId(): string {
 
 type LogFields = Record<string, unknown>;
 
+/**
+ * Node's test runner sets NODE_TEST_CONTEXT in the processes it spawns.
+ *
+ * The error-classification tests deliberately drive failure paths, so without
+ * this every run printed a wall of red JSON around passing tests — which reads
+ * as a broken suite and trains people to ignore the output. Detected rather
+ * than configured, so `npm test` needs no env wrapper to stay quiet.
+ */
+const UNDER_TEST = Boolean(process.env.NODE_TEST_CONTEXT);
+
 function emit(level: "info" | "warn" | "error", scope: string, fields: LogFields) {
+  if (UNDER_TEST) return;
   const line = JSON.stringify({ level, scope, ...fields });
   if (level === "error") console.error(line);
   else if (level === "warn") console.warn(line);

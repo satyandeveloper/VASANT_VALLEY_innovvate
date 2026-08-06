@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { supabase, supabaseConfig } from "@/lib/supabase";
-import { classifySupabase, getLastFailure, type PostgrestErrorLike } from "@/lib/errors";
+import { supabase, supabaseConfig } from "@/lib/platform/supabase";
+import { classifySupabase, getLastFailure, type PostgrestErrorLike } from "@/lib/platform/errors";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

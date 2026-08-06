@@ -13,7 +13,7 @@ config({ path: ".env.local" });
 
 import { readFileSync } from "node:fs";
 import OpenAI from "openai";
-import { normalizeWithMap, findQuoteInOriginal } from "../lib/verification";
+import { normalizeWithMap, findQuoteInOriginal } from "../lib/analysis/verification";
 
 const MODELS = [
   { id: "gpt-4o-mini", reasoning: false },

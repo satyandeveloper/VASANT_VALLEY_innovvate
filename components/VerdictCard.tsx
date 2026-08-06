@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import type { Analysis } from "@/lib/types";
-import { severityCounts, VERDICT_PRESENTATION } from "@/lib/verdict";
-import { copyText, QUOTE_GUARANTEE } from "@/lib/summary";
+import { severityCounts, VERDICT_PRESENTATION } from "@/lib/analysis/verdict";
+import { copyText, QUOTE_GUARANTEE } from "@/lib/analysis/summary";
 
 /**
  * The verdict is delivered as a rubber stamp — the visual language of a

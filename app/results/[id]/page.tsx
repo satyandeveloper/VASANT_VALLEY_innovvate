@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ResultView } from "@/components/ResultView";
-import { getById } from "@/lib/pipeline";
+import { getById } from "@/lib/analysis/pipeline";
 
 export const dynamic = "force-dynamic";
 

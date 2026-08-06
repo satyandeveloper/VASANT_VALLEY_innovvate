@@ -13,7 +13,7 @@ import { readdirSync, readFileSync } from "fs";
 import { join } from "path";
 
 async function main() {
-  const { runAnalysis } = await import("../lib/pipeline");
+  const { runAnalysis } = await import("../lib/analysis/pipeline");
   const dir = join(__dirname, "samples");
   const files = readdirSync(dir).filter((f) => f.endsWith(".txt"));
   if (files.length === 0) {

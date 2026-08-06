@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { getCached, recordHistory, runAnalysis } from "@/lib/pipeline";
-import { checkAllowance, USER_LIMIT, type Refusal } from "@/lib/ratelimit";
-import { visitorId } from "@/lib/visitor";
+import { getCached, recordHistory, runAnalysis } from "@/lib/analysis/pipeline";
+import { checkAllowance, USER_LIMIT, type Refusal } from "@/lib/platform/rate-limit";
+import { visitorId } from "@/lib/platform/visitor";
 import { MAX_CHARS, MIN_CHARS } from "@/lib/types";
-import { extractFromUrl, ExtractError } from "@/lib/extract";
+import { extractFromUrl, ExtractError } from "@/lib/documents/extract";
 import {
   AppError,
   classifyOpenAI,
@@ -12,7 +12,7 @@ import {
   logError,
   logInfo,
   newRequestId,
-} from "@/lib/errors";
+} from "@/lib/platform/errors";
 
 export const maxDuration = 60;
 export const runtime = "nodejs";

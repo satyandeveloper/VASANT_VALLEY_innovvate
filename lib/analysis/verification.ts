@@ -88,9 +88,71 @@ function offsetsFor(
 }
 
 /**
+ * Words whose removal reverses what a clause means.
+ *
+ * The trimmed-core rung below exists because models clip a word off the ends
+ * of a quote. The danger is that the clipped-off part is exactly what carries
+ * the meaning: "you do NOT grant a perpetual licence" trimmed at the front
+ * matches "grant a perpetual licence" in the document, and a fabricated clause
+ * is then reported as found. The displayed text is still the document's own
+ * words — pipeline.ts substitutes the real slice — but the finding would have
+ * been let through on evidence that says the opposite of the model's claim.
+ */
+const MEANING_REVERSING = new Set([
+  "no",
+  "not",
+  "nor",
+  "never",
+  "neither",
+  "cannot",
+  "cant",
+  "wont",
+  "without",
+  "unless",
+  "except",
+  "excluding",
+  "prohibited",
+]);
+
+/**
+ * Trim a whole word or two off each end of a normalised quote.
+ *
+ * Two rules make this safe where a blind `slice(10, -10)` was not: the cut
+ * lands on word boundaries, so a word is never half-matched, and the trim is
+ * abandoned entirely if it would discard a meaning-reversing word.
+ *
+ * Returns null when no safe core of usable length exists.
+ */
+function safeTrimmedCore(normalizedQuote: string): string | null {
+  const words = normalizedQuote.split(" ").filter(Boolean);
+  if (words.length < 6) return null;
+
+  const MIN_TRIM_CHARS = 10;
+  let lead = 0;
+  for (let dropped = 0; lead < words.length && dropped < MIN_TRIM_CHARS; lead++) {
+    dropped += words[lead].length + 1;
+  }
+  let tail = 0;
+  for (let dropped = 0; tail < words.length - lead && dropped < MIN_TRIM_CHARS; tail++) {
+    dropped += words[words.length - 1 - tail].length + 1;
+  }
+
+  const discarded = [...words.slice(0, lead), ...words.slice(words.length - tail)];
+  if (discarded.some((w) => MEANING_REVERSING.has(w))) return null;
+
+  const core = words.slice(lead, words.length - tail).join(" ");
+  return core.length >= 40 ? core : null;
+}
+
+/**
  * Find a model quote in the original document. Returns original-text offsets.
- * Retry ladder: exact normalised match → trimmed core (models sometimes add a
- * leading ellipsis or clip a word) → longest sentence alone.
+ * Retry ladder: exact normalised match → safely trimmed core (models sometimes
+ * add a leading ellipsis or clip a word) → longest sentence alone.
+ *
+ * Each rung is more forgiving than the last, so each is a place a false
+ * positive could enter. The ladder stops at whole words and whole sentences
+ * for that reason: it will re-find a quote the model reformatted, and it will
+ * not assemble one the document never contained.
  */
 export function findQuoteInOriginal(
   quote: string,
@@ -103,9 +165,8 @@ export function findQuoteInOriginal(
   let idx = doc.norm.indexOf(q);
   if (idx !== -1) return offsetsFor(doc, original, idx, q.length);
 
-  // trimmed core
-  const core = q.slice(10, q.length - 10);
-  if (core.length >= 40) {
+  const core = safeTrimmedCore(q);
+  if (core) {
     idx = doc.norm.indexOf(core);
     if (idx !== -1) return offsetsFor(doc, original, idx, core.length);
   }

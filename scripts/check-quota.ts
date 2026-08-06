@@ -3,14 +3,16 @@
  *
  *   npx tsx scripts/check-quota.ts
  *
- * There is no test runner in this project, and adding one to cover a single
- * module would be a larger change than the module itself. This is the next
- * best thing: it drives `checkAllowance` with throwaway subject ids, asserts
- * the behaviour that matters, and deletes its own rows afterwards.
+ * This is deliberately a script rather than a file under tests/. Everything in
+ * tests/ runs offline in milliseconds against pure functions, so `npm test`
+ * can be trusted in CI and on a plane. The allowance rules cannot be checked
+ * that way — they are a conversation with Postgres, and stubbing that would
+ * only assert that the stub matches the assumptions being tested.
  *
- * It talks to the configured Supabase project, so it also doubles as a check
- * that the `subject` column from supabase/schema.sql was actually applied —
- * without it, every assertion below fails.
+ * So this drives `checkAllowance` against the real configured project with
+ * throwaway subject ids, and doubles as a check that the `subject` column from
+ * supabase/schema.sql was actually applied — without it, every assertion here
+ * fails.
  */
 import { config } from "dotenv";
 config({ path: ".env.local" });
@@ -21,8 +23,8 @@ import {
   ANON_LIMIT,
   USER_LIMIT,
   type Subject,
-} from "../lib/ratelimit";
-import { supabase } from "../lib/supabase";
+} from "../lib/platform/rate-limit";
+import { supabase } from "../lib/platform/supabase";
 
 let failures = 0;
 

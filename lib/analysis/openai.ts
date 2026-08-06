@@ -1,6 +1,6 @@
 import OpenAI from "openai";
-import type { SectionResult } from "./types";
-import { AppError } from "./errors";
+import type { SectionResult } from "../types";
+import { AppError } from "../platform/errors";
 
 export const MODEL = process.env.ANALYSIS_MODEL?.trim() || "gpt-5.6-luna";
 

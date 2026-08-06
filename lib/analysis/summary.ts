@@ -1,10 +1,4 @@
-import {
-  CATEGORIES,
-  CATEGORY_LABELS,
-  DISCLAIMER,
-  type Category,
-  type VerifiedFlag,
-} from "./types";
+import { CATEGORIES, DISCLAIMER, type Category, type VerifiedFlag } from "../types";
 
 const SEVERITY_ORDER = { high: 0, medium: 1, low: 2 } as const;
 
@@ -59,5 +53,3 @@ export function copyText(headline: string, bullets: string[]): string {
     `— via I AGREE. ${DISCLAIMER}`,
   ].join("\n");
 }
-
-export { CATEGORY_LABELS };

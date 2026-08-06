@@ -4,15 +4,15 @@ import { splitIntoSections, mapWithConcurrency } from "./sectioning";
 import { normalizeWithMap, findQuoteInOriginal } from "./verification";
 import { computeVerdict, headlineFor } from "./verdict";
 import { buildSummary } from "./summary";
-import { supabase } from "./supabase";
-import { unwrap } from "./errors";
+import { supabase } from "../platform/supabase";
+import { unwrap } from "../platform/errors";
 import type {
   Analysis,
   RawFlag,
   SectionResult,
   UnverifiedFlag,
   VerifiedFlag,
-} from "./types";
+} from "../types";
 
 const SEVERITY_ORDER = { high: 0, medium: 1, low: 2 } as const;
 

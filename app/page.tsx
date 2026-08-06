@@ -1,7 +1,7 @@
 import { AnalyzeForm, type SampleChip } from "@/components/AnalyzeForm";
 import { Hero } from "@/components/Hero";
-import { supabase } from "@/lib/supabase";
-import { unwrap } from "@/lib/errors";
+import { supabase } from "@/lib/platform/supabase";
+import { unwrap } from "@/lib/platform/errors";
 
 export const dynamic = "force-dynamic";
 

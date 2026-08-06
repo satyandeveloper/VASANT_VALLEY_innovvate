@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { getById } from "@/lib/pipeline";
+import { getById } from "@/lib/analysis/pipeline";
 import { renderShareImage } from "./share-image";
 
 export const runtime = "nodejs";

@@ -1,5 +1,5 @@
-import type { Verdict, VerifiedFlag } from "./types";
-import { CANARY_DEEP, INK_FAINT, OXBLOOD, SAGE } from "./palette";
+import type { Verdict, VerifiedFlag } from "../types";
+import { CANARY_DEEP, INK_FAINT, OXBLOOD, SAGE } from "../palette";
 
 /**
  * Deterministic grade — computed only from VERIFIED flags, so nothing

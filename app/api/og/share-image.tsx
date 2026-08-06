@@ -2,9 +2,9 @@ import { readFileSync } from "node:fs";
 import { ImageResponse } from "next/og";
 import type { Analysis } from "@/lib/types";
 import { DISCLAIMER } from "@/lib/types";
-import { QUOTE_GUARANTEE_SHORT } from "@/lib/summary";
+import { QUOTE_GUARANTEE_SHORT } from "@/lib/analysis/summary";
 import { INK, INK_FAINT, INK_SOFT, PAPER, SAGE } from "@/lib/palette";
-import { severityCounts, VERDICT_PRESENTATION } from "@/lib/verdict";
+import { severityCounts, VERDICT_PRESENTATION } from "@/lib/analysis/verdict";
 
 /**
  * The share image — the only piece of this product that travels.

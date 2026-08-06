@@ -39,14 +39,17 @@ export function AnalyzeForm({ samples }: { samples: SampleChip[] }) {
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
+  // Advances the "Reading… / Scanning… / Verifying…" caption while a request is
+  // in flight. The step is reset in `analyze()` where loading is switched on,
+  // not here: setting state synchronously in an effect body makes the component
+  // render, immediately re-render, and only then start the timer.
   useEffect(() => {
     if (!loading) return;
-    setProgressStep(0);
-    const t = setInterval(
-      () => setProgressStep((s) => Math.min(s + 1, PROGRESS_STEPS.length - 1)),
+    const timer = setInterval(
+      () => setProgressStep((step) => Math.min(step + 1, PROGRESS_STEPS.length - 1)),
       3000
     );
-    return () => clearInterval(t);
+    return () => clearInterval(timer);
   }, [loading]);
 
   useEffect(() => {
@@ -56,6 +59,7 @@ export function AnalyzeForm({ samples }: { samples: SampleChip[] }) {
   async function analyze() {
     setError(null);
     setAnalysis(null);
+    setProgressStep(0);
     setLoading(true);
     try {
       const res = await fetch("/api/analyze", {
