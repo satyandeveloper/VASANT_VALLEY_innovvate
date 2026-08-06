@@ -6,6 +6,14 @@
  *
  * The PDF is produced from index.html itself rather than from a copy of it,
  * so it cannot drift from the slides on the page.
+ *
+ * Usage: node build-assets.mjs [prototype|slides|video]
+ *
+ * With no argument every step runs. Naming one runs only that step, which
+ * matters because the steps have very different requirements: `slides` reads
+ * the local index.html and works offline, while `prototype` drives the
+ * deployed site and fails whenever that is down or mid-deploy. Retypesetting
+ * the page should not be blocked on production being reachable.
  */
 import { chromium } from "playwright";
 import { mkdirSync, copyFileSync } from "node:fs";
@@ -24,10 +32,21 @@ const DOC = `ACME CLOUD — TERMS OF SERVICE
 
 3. Renewal. Your subscription renews automatically for successive one-year terms at the then-current rate unless you cancel in writing at least thirty days before the renewal date. Fees already charged are non-refundable.`;
 
-const browser = await chromium.launch({ channel: "chrome" });
+const STEPS = ["prototype", "slides", "video"];
+const only = process.argv[2];
+if (only && !STEPS.includes(only)) {
+  console.error(`Unknown step "${only}". Expected one of: ${STEPS.join(", ")}`);
+  process.exit(1);
+}
+const wants = (step) => !only || only === step;
+
+// Launching Chrome for a step that only copies a file would be a pointless
+// dependency on having a browser at all.
+const browser =
+  wants("prototype") || wants("slides") ? await chromium.launch({ channel: "chrome" }) : null;
 
 /* ---------------------------------------------- 1. prototype screenshot */
-{
+if (wants("prototype")) {
   const ctx = await browser.newContext({
     viewport: { width: 1440, height: 980 },
     deviceScaleFactor: 2,
@@ -52,7 +71,7 @@ const browser = await chromium.launch({ channel: "chrome" });
 }
 
 /* ------------------------------------------------------ 2. slides PDF */
-{
+if (wants("slides")) {
   // The page itself is the source: load index.html and reshape its DOM into one
   // slide per printed page. Reusing the real document means the PDF inherits
   // the same <head> — the same webfonts and the same stylesheet — so it cannot
@@ -109,8 +128,10 @@ const browser = await chromium.launch({ channel: "chrome" });
   await ctx.close();
 }
 
-await browser.close();
+if (browser) await browser.close();
 
 /* ------------------------------------------------------- 3. video copy */
-copyFileSync(`${ROOT}/assets/demo-film.mp4`, `${OUT}/demo-film.mp4`);
-console.log("✓ demo-film.mp4 copied");
+if (wants("video")) {
+  copyFileSync(`${ROOT}/assets/demo-film.mp4`, `${OUT}/demo-film.mp4`);
+  console.log("✓ demo-film.mp4 copied");
+}

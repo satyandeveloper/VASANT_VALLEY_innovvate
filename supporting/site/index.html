@@ -10,436 +10,455 @@
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- The app's three voices, in the app's three weights. -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Libre+Caslon+Display&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Courier+Prime:wght@400;700&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css" />
     <link
       rel="icon"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23f0c64a'/><text y='74' x='50' font-size='62' font-family='Georgia,serif' text-anchor='middle' fill='%2312275c'>A</text></svg>"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23f0c64a'/><text y='76' x='50' font-size='68' font-weight='800' font-family='system-ui,sans-serif' text-anchor='middle' fill='%2324215c'>A</text></svg>"
     />
   </head>
   <body>
-    <div class="tab">
-      <span class="mark">I AGREE</span>
-      <span class="docket">Submission packet · Exhibits A–E</span>
-      <a class="open" href="https://innovvate.devjindal.me">Open the prototype</a>
-    </div>
+    <!-- The masthead the app carries on every page: a filed-under label beside
+         the title, closed by a heavy rule. -->
+    <header class="masthead">
+      <div class="inner">
+        <a class="brand" href="#top">
+          <span class="mark">I&nbsp;Agree</span>
+          <span class="field-label">Submission packet · Exhibits A–E</span>
+        </a>
+        <a class="btn" href="https://innovvate.devjindal.me">Open the prototype</a>
+      </div>
+    </header>
 
-    <div class="filing">
-      <div class="paper">
-        <!-- Case caption ------------------------------------------------ -->
-        <div class="caption">
-          <p class="court line">In the matter of the terms nobody reads</p>
-          <div class="double"></div>
-          <h1 class="line">I AGREE</h1>
-          <p class="sub">The fine print decoder</p>
-          <div class="double"></div>
-          <!-- The number must hang in the rail, so the numbered element has to
-               span the full paper width; the centred column sits inside it. -->
-          <div class="line">
-            <p class="stand">
-              Five things were asked for. All five are below, each one filed as an exhibit you can
-              open and check. Numbers run down the left margin because the point of this project
-              is that every claim should cite exactly where it came from.
-            </p>
-          </div>
-        </div>
+    <main id="top">
+      <!-- The thesis, staged as the app stages it: a wall of fine print nobody
+           reads, and the one plain sentence that replaces it. -->
+      <section class="sheet hero">
+        <p class="fineprint wall" id="wall" aria-hidden="true">
+          By accessing or using the Service you acknowledge that you have read, understood, and
+          agree to be bound by these Terms, together with any additional terms, policies,
+          guidelines, or amendments referenced herein or made available by the Company from time to
+          time, whether or not notice of such amendment is provided to you. You grant the Company a
+          perpetual, irrevocable, worldwide, non-exclusive, royalty-free, fully paid-up,
+          sublicensable and transferable licence to host, store, cache, reproduce, publish, display,
+          adapt, modify, translate, create derivative works from, and otherwise exploit any content,
+          data, or material that you submit, post, transmit, or otherwise make available through the
+          Service, in any medium now known or hereafter devised, for any purpose, without further
+          notice to or consent from you and without any obligation of attribution or compensation.
+          The Company may collect, process, retain, and disclose personal information, device
+          identifiers, approximate and precise location data, usage telemetry, and inferred
+          characteristics, and may share such information with affiliates, service providers,
+          advertising partners, analytics providers, and successors in interest, including in
+          connection with any merger, acquisition, reorganisation, or sale of assets. Your
+          subscription shall renew automatically for successive terms of equal duration at the
+          then-current rate unless cancelled in writing not less than thirty days prior to the
+          commencement of the renewal term; cancellation requests submitted by any other means shall
+          be deemed ineffective and fees already charged are non-refundable in whole or in part. To
+          the maximum extent permitted by applicable law, the Company disclaims all warranties,
+          express or implied, including any implied warranties of merchantability, fitness for a
+          particular purpose, title, and non-infringement, and shall not be liable for any indirect,
+          incidental, special, consequential, exemplary, or punitive damages, or for any loss of
+          profits, revenue, data, goodwill, or anticipated savings, howsoever arising. You agree
+          that any dispute, claim, or controversy arising out of or relating to these Terms shall be
+          resolved exclusively by final and binding individual arbitration, and you expressly waive
+          any right to a trial by jury and any right to participate in a class, collective,
+          consolidated, or representative action. The Company may suspend, restrict, or terminate
+          your access to the Service at any time, for any reason or no reason, with or without
+          notice, and shall have no liability to you in respect of such suspension or termination.
+          These Terms shall be governed by the laws of the jurisdiction in which the Company is
+          incorporated, without regard to conflict of law principles.
+        </p>
+        <div class="clear" aria-hidden="true"></div>
 
-        <!-- Index of exhibits ------------------------------------------- -->
-        <div class="index-head line">
-          <span>Index of exhibits</span>
-          <span>Filed 6 August 2026</span>
+        <div class="inner">
+          <p class="field-label">In the matter of the terms nobody reads</p>
+          <h1>
+            Five things were asked for.<br />
+            <span class="marker marker--animate">All five are here.</span>
+          </h1>
+          <p class="stand">
+            Each one filed as an exhibit you can open and check for yourself — which is the same
+            thing the product asks of you, and the only claim it makes.
+          </p>
+          <p class="field-label filed"><span>Filed 6 August 2026</span></p>
         </div>
-        <ul class="index">
+      </section>
+
+      <!-- The register: the shape the app uses for /registry and /history. An
+           index of five things is a register, so it is set as one. -->
+      <section class="sheet register">
+        <div class="register-head">
+          <span class="field-label">Index of exhibits</span>
+          <span class="field-label">Five items</span>
+        </div>
+        <ul>
           <li>
             <a href="#a">
               <span class="ex">A</span>
               <span class="what">Project description</span>
-              <span class="at" data-cite="a">Line —</span>
+              <span class="field-label at">200 words</span>
             </a>
           </li>
           <li>
             <a href="#b">
               <span class="ex">B</span>
               <span class="what">Presentation</span>
-              <span class="at" data-cite="b">Line —</span>
+              <span class="field-label at">3 slides · PDF</span>
             </a>
           </li>
           <li>
             <a href="#c">
               <span class="ex">C</span>
               <span class="what">Working prototype</span>
-              <span class="at" data-cite="c">Line —</span>
+              <span class="field-label at">Live</span>
             </a>
           </li>
           <li>
             <a href="#d">
               <span class="ex">D</span>
               <span class="what">Demonstration video</span>
-              <span class="at" data-cite="d">Line —</span>
+              <span class="field-label at">38 seconds</span>
             </a>
           </li>
           <li>
             <a href="#e">
               <span class="ex">E</span>
               <span class="what">Files and source</span>
-              <span class="at" data-cite="e">Line —</span>
+              <span class="field-label at">Repository</span>
             </a>
           </li>
         </ul>
+      </section>
 
-        <!-- Exhibit A ---------------------------------------------------- -->
-        <section class="exhibit" id="a">
-          <div class="exhibit-head line">
-            <div class="sticker">Exhibit<b>A</b></div>
-            <div>
-              <h2>Project description</h2>
-              <p class="note">The concept and purpose, inside the 200-word limit.</p>
-            </div>
+      <!-- Exhibit A ---------------------------------------------------- -->
+      <section class="sheet exhibit" id="a">
+        <div class="exhibit-head">
+          <div class="stamp">Exhibit<b>A</b></div>
+          <div>
+            <h2>Project description</h2>
+            <p class="note">The concept and purpose, inside the 200-word limit.</p>
           </div>
+        </div>
 
-          <div class="prose">
-            <p class="line">
-              Every day people click &ldquo;I agree&rdquo; on documents nobody reads. Reading the
-              terms you accept in a year would take weeks, so the agreements deciding what happens
-              to your data, your money and your work go unread &mdash; and they are written knowing
-              that.
+        <div class="prose">
+          <p>
+            Every day people click &ldquo;I agree&rdquo; on documents nobody reads. Reading the
+            terms you accept in a year would take weeks, so the agreements deciding what happens to
+            your data, your money and your work go unread &mdash; and they are written knowing
+            that.
+          </p>
+          <p>
+            I AGREE is a fine print decoder. Paste a terms of service, privacy policy or rental
+            agreement, or give it a link, and in about ten seconds it returns a plain-English
+            verdict plus the specific risks across three categories that cost people real money:
+            what happens to your personal data, how hard the service is to cancel, and what rights
+            you sign away over content you create.
+          </p>
+          <p>
+            The difference is verification. An AI asked to summarise a contract can quietly invent a
+            clause that was never in it. Here, every flag must quote the document word for word, and
+            each quote is checked character by character against the source before anyone sees it.
+            Quotes that cannot be matched are withheld for human review instead of presented as
+            fact. Each warning links to the exact highlighted line that caused it, so you never take
+            the tool&rsquo;s word for anything.
+          </p>
+          <p>No account. No upload. Free.</p>
+        </div>
+
+        <p class="field-label stamped">197 words of 200</p>
+      </section>
+
+      <!-- Exhibit B ---------------------------------------------------- -->
+      <section class="sheet exhibit" id="b">
+        <div class="exhibit-head">
+          <div class="stamp">Exhibit<b>B</b></div>
+          <div>
+            <h2>Presentation</h2>
+            <p class="note">
+              Three slides: the idea, how it works, and what it changes. Scroll the deck sideways,
+              or take the PDF.
             </p>
-            <p class="line">
-              I AGREE is a fine print decoder. Paste a terms of service, privacy policy or rental
-              agreement, or give it a link, and in about ten seconds it returns a plain-English
-              verdict plus the specific risks across three categories that cost people real money:
-              what happens to your personal data, how hard the service is to cancel, and what
-              rights you sign away over content you create.
-            </p>
-            <p class="line">
-              The difference is verification. An AI asked to summarise a contract can quietly
-              invent a clause that was never in it. Here, every flag must quote the document word
-              for word, and each quote is checked character by character against the source before
-              anyone sees it. Quotes that cannot be matched are withheld for human review instead
-              of presented as fact. Each warning links to the exact highlighted line that caused
-              it, so you never take the tool&rsquo;s word for anything.
-            </p>
-            <p class="line">No account. No upload. Free.</p>
           </div>
+        </div>
 
-          <p class="stamped">197 words of 200</p>
-        </section>
-
-        <!-- Exhibit B ---------------------------------------------------- -->
-        <section class="exhibit" id="b">
-          <div class="exhibit-head line">
-            <div class="sticker">Exhibit<b>B</b></div>
-            <div>
-              <h2>Presentation</h2>
-              <p class="note">
-                Three slides: the idea, how it works, and what it changes. Scroll the deck
-                sideways, or take the PDF.
-              </p>
-            </div>
-          </div>
-
-          <div class="deck line">
-            <article class="slide">
-              <span class="no">01 / 03</span>
-              <p class="eyebrow">The idea</p>
-              <h3>Contracts are written to be skipped. This one gets read.</h3>
-              <p class="body">
-                Consent is the legal basis for most of what companies do with our data and our
-                money &mdash; and it is collected through documents built to be too long and too
-                dense to read. The asymmetry is the product, not an accident.
-              </p>
-              <div class="grid3">
-                <div class="cell">
-                  <div class="big">Unreadable</div>
-                  <div class="cap">
-                    Terms run to tens of thousands of words, in language written for courts rather
-                    than for the person clicking accept.
-                  </div>
-                </div>
-                <div class="cell">
-                  <div class="big">Unavoidable</div>
-                  <div class="cap">
-                    Refusing means losing the bank, the flat, or the job application. The consent is
-                    real in law and hollow in practice.
-                  </div>
-                </div>
-                <div class="cell">
-                  <div class="big">Unequal</div>
-                  <div class="cap">
-                    One side has lawyers. The other has thirty seconds and a checkbox. A decoder
-                    puts a reader on the second side.
-                  </div>
+        <div class="deck">
+          <article class="slide">
+            <span class="field-label no">01 / 03</span>
+            <p class="field-label eyebrow">The idea</p>
+            <h3>Contracts are written to be skipped. This one gets read.</h3>
+            <p class="body">
+              Consent is the legal basis for most of what companies do with our data and our money
+              &mdash; and it is collected through documents built to be too long and too dense to
+              read. The asymmetry is the product, not an accident.
+            </p>
+            <div class="grid3">
+              <div class="cell">
+                <div class="big">Unreadable</div>
+                <div class="cap">
+                  Terms run to tens of thousands of words, in language written for courts rather
+                  than for the person clicking accept.
                 </div>
               </div>
-            </article>
-
-            <article class="slide">
-              <span class="no">02 / 03</span>
-              <p class="eyebrow">The workflow</p>
-              <h3>Four steps, and one of them is the whole point.</h3>
-              <p class="body">
-                These are numbered because the order decides the outcome: nothing reaches the
-                reader until it has survived step three.
-              </p>
-              <div class="flow">
-                <div class="step">
-                  <div class="k">Step 1</div>
-                  <div class="v">Take the document</div>
-                  <div class="d">
-                    Pasted text or a link. Long documents split into overlapping sections so no
-                    clause is lost at a boundary.
-                  </div>
-                </div>
-                <div class="step">
-                  <div class="k">Step 2</div>
-                  <div class="v">Find the risks</div>
-                  <div class="d">
-                    A language model returns strictly structured findings in three categories, each
-                    carrying a severity and a quote.
-                  </div>
-                </div>
-                <div class="step key">
-                  <div class="k">Step 3 — the point</div>
-                  <div class="v">Verify every quote</div>
-                  <div class="d">
-                    Each quote is matched character by character against the source. No match, no
-                    claim: it is withheld and marked for human review.
-                  </div>
-                </div>
-                <div class="step">
-                  <div class="k">Step 4</div>
-                  <div class="v">Show the evidence</div>
-                  <div class="d">
-                    A verdict, plain-English warnings, and the document itself alongside them with
-                    every cited clause highlighted in place.
-                  </div>
+              <div class="cell">
+                <div class="big">Unavoidable</div>
+                <div class="cap">
+                  Refusing means losing the bank, the flat, or the job application. The consent is
+                  real in law and hollow in practice.
                 </div>
               </div>
-            </article>
-
-            <article class="slide">
-              <span class="no">03 / 03</span>
-              <p class="eyebrow">Expected impact</p>
-              <h3>Make the unreadable checkable, for the cost of a rounding error.</h3>
-              <p class="body">
-                The claim worth testing is not &ldquo;AI reads contracts&rdquo; &mdash; plenty of
-                tools say that. It is that a reader can check the tool, clause by clause, in the
-                source text itself.
-              </p>
-              <div class="grid3">
-                <div class="cell">
-                  <div class="big">10 seconds</div>
-                  <div class="cap">
-                    In place of a document most people would need an hour and a law degree to work
-                    through, assuming they tried at all.
-                  </div>
-                </div>
-                <div class="cell">
-                  <div class="big">Every flag cited</div>
-                  <div class="cap">
-                    Each warning shown is anchored to verbatim text. Findings that cannot be
-                    verified are separated out, never quietly dropped or dressed up as fact.
-                  </div>
-                </div>
-                <div class="cell">
-                  <div class="big">Under $0.002</div>
-                  <div class="cap">
-                    Measured cost per document, which is what lets it stay free for the people who
-                    need it most.
-                  </div>
+              <div class="cell">
+                <div class="big">Unequal</div>
+                <div class="cap">
+                  One side has lawyers. The other has thirty seconds and a checkbox. A decoder puts
+                  a reader on the second side.
                 </div>
               </div>
-            </article>
-          </div>
-
-          <p class="label deck-hint stamped">Scroll sideways for all three slides</p>
-
-          <div class="acts">
-            <a class="act plain" href="./assets/i-agree-slides.pdf" download>Download the slides</a>
-          </div>
-        </section>
-
-        <!-- Exhibit C ---------------------------------------------------- -->
-        <section class="exhibit" id="c">
-          <div class="exhibit-head line">
-            <div class="sticker">Exhibit<b>C</b></div>
-            <div>
-              <h2>Working prototype</h2>
-              <p class="note">
-                Deployed and usable now. Paste any terms of service and it runs the real analysis.
-              </p>
             </div>
-          </div>
+          </article>
 
-          <a class="line" href="https://innovvate.devjindal.me" aria-label="Open the live prototype">
-            <img
-              class="shot"
-              src="./assets/prototype.png"
-              alt="The prototype: risk flags on the left, the source document on the right with every cited clause highlighted."
-              loading="lazy"
-            />
-          </a>
-
-          <div class="acts">
-            <a class="act" href="https://innovvate.devjindal.me">Open the prototype</a>
-            <a class="act plain" href="https://innovvate.devjindal.me/api/health">Check live status</a>
-          </div>
-        </section>
-
-        <!-- Exhibit D ---------------------------------------------------- -->
-        <section class="exhibit" id="d">
-          <div class="exhibit-head line">
-            <div class="sticker">Exhibit<b>D</b></div>
-            <div>
-              <h2>Demonstration video</h2>
-              <p class="note">
-                38 seconds, inside the two-minute limit. The screen footage is the deployed
-                application, recorded in one unedited session.
-              </p>
+          <article class="slide">
+            <span class="field-label no">02 / 03</span>
+            <p class="field-label eyebrow">The workflow</p>
+            <h3>Four steps, and one of them is the whole point.</h3>
+            <p class="body">
+              These are numbered because the order decides the outcome: nothing reaches the reader
+              until it has survived step three.
+            </p>
+            <div class="flow">
+              <div class="step">
+                <div class="field-label k">Step 1</div>
+                <div class="v">Take the document</div>
+                <div class="d">
+                  Pasted text or a link. Long documents split into overlapping sections so no clause
+                  is lost at a boundary.
+                </div>
+              </div>
+              <div class="step">
+                <div class="field-label k">Step 2</div>
+                <div class="v">Find the risks</div>
+                <div class="d">
+                  A language model returns strictly structured findings in three categories, each
+                  carrying a severity and a quote.
+                </div>
+              </div>
+              <div class="step key">
+                <div class="field-label k">Step 3 — the point</div>
+                <div class="v">Verify every quote</div>
+                <div class="d">
+                  Each quote is matched character by character against the source. No match, no
+                  claim: it is withheld and marked for human review.
+                </div>
+              </div>
+              <div class="step">
+                <div class="field-label k">Step 4</div>
+                <div class="v">Show the evidence</div>
+                <div class="d">
+                  A verdict, plain-English warnings, and the document itself alongside them with
+                  every cited clause highlighted in place.
+                </div>
+              </div>
             </div>
-          </div>
+          </article>
 
-          <video class="line" controls preload="metadata" poster="./assets/poster.png" playsinline>
-            <source src="./assets/demo-film.mp4" type="video/mp4" />
-            This browser cannot play embedded video.
-            <a href="./assets/demo-film.mp4">Download the demonstration video.</a>
-          </video>
-
-          <div class="acts">
-            <a class="act plain" href="./assets/demo-film.mp4" download>Download the video</a>
-          </div>
-        </section>
-
-        <!-- Exhibit E ---------------------------------------------------- -->
-        <section class="exhibit" id="e">
-          <div class="exhibit-head line">
-            <div class="sticker">Exhibit<b>E</b></div>
-            <div>
-              <h2>Files and source</h2>
-              <p class="note">
-                Everything behind the packet. One repository holds the application, this page, the
-                slides, and the scripts that produced the video and the model benchmark.
-              </p>
+          <article class="slide">
+            <span class="field-label no">03 / 03</span>
+            <p class="field-label eyebrow">Expected impact</p>
+            <h3>Make the unreadable checkable, for the cost of a rounding error.</h3>
+            <p class="body">
+              The claim worth testing is not &ldquo;AI reads contracts&rdquo; &mdash; plenty of
+              tools say that. It is that a reader can check the tool, clause by clause, in the
+              source text itself.
+            </p>
+            <div class="grid3">
+              <div class="cell">
+                <div class="big">10 seconds</div>
+                <div class="cap">
+                  In place of a document most people would need an hour and a law degree to work
+                  through, assuming they tried at all.
+                </div>
+              </div>
+              <div class="cell">
+                <div class="big">Every flag cited</div>
+                <div class="cap">
+                  Each warning shown is anchored to verbatim text. Findings that cannot be verified
+                  are separated out, never quietly dropped or dressed up as fact.
+                </div>
+              </div>
+              <div class="cell">
+                <div class="big">Under $0.002</div>
+                <div class="cap">
+                  Measured cost per document, which is what lets it stay free for the people who
+                  need it most.
+                </div>
+              </div>
             </div>
-          </div>
+          </article>
+        </div>
 
-          <div class="scroller line">
-            <table class="schedule">
-              <thead>
-                <tr>
-                  <th>Item</th>
-                  <th>What it is</th>
-                  <th>Where</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="item">Source code</td>
-                  <td class="desc">
-                    The whole application: analysis pipeline, quote verification, interface.
-                  </td>
-                  <td>
-                    <a href="https://github.com/satyandeveloper/VASANT_VALLEY_innovvate"
-                      >github.com/satyandeveloper/VASANT_VALLEY_innovvate</a
-                    >
-                  </td>
-                </tr>
-                <tr>
-                  <td class="item">Live prototype</td>
-                  <td class="desc">The deployed application, running against the live model.</td>
-                  <td><a href="https://innovvate.devjindal.me">innovvate.devjindal.me</a></td>
-                </tr>
-                <tr>
-                  <td class="item">Demonstration video</td>
-                  <td class="desc">1080p MP4, composed in Remotion from a real recorded session.</td>
-                  <td><a href="./assets/demo-film.mp4">assets/demo-film.mp4</a></td>
-                </tr>
-                <tr>
-                  <td class="item">Slides</td>
-                  <td class="desc">The three slides above, as a printable PDF.</td>
-                  <td><a href="./assets/i-agree-slides.pdf">assets/i-agree-slides.pdf</a></td>
-                </tr>
-                <tr>
-                  <td class="item">Verification</td>
-                  <td class="desc">
-                    The quote matcher that decides whether a finding may be shown at all.
-                  </td>
-                  <td>
-                    <a
-                      href="https://github.com/satyandeveloper/VASANT_VALLEY_innovvate/blob/main/lib/verification.ts"
-                      >lib/verification.ts</a
-                    >
-                  </td>
-                </tr>
-                <tr>
-                  <td class="item">Model benchmark</td>
-                  <td class="desc">
-                    Scores candidate models on cost and on verbatim-quote accuracy, using the
-                    app&rsquo;s own verifier as the measure.
-                  </td>
-                  <td>
-                    <a
-                      href="https://github.com/satyandeveloper/VASANT_VALLEY_innovvate/blob/main/scripts/bench-models.ts"
-                      >scripts/bench-models.ts</a
-                    >
-                  </td>
-                </tr>
-                <tr>
-                  <td class="item">Video source</td>
-                  <td class="desc">
-                    The Remotion composition and the Playwright script that captured the footage.
-                  </td>
-                  <td>
-                    <a
-                      href="https://github.com/satyandeveloper/VASANT_VALLEY_innovvate/tree/main/supporting"
-                      >supporting/</a
-                    >
-                  </td>
-                </tr>
-                <tr>
-                  <td class="item">Sample documents</td>
-                  <td class="desc">
-                    The public documents used for the demos, with their sources credited.
-                  </td>
-                  <td>
-                    <a
-                      href="https://github.com/satyandeveloper/VASANT_VALLEY_innovvate/tree/main/scripts/samples"
-                      >scripts/samples/</a
-                    >
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </div>
-    </div>
+        <p class="field-label stamped">Scroll sideways for all three slides</p>
 
-    <div class="certificate">
-      <p class="ttl">Certificate</p>
-      <p>
-        I AGREE is an information tool, not a law firm. It points at terms worth a second look; it
-        does not give legal advice, and it will not catch everything. For anything that matters,
-        talk to a qualified lawyer. The prototype is at
-        <a href="https://innovvate.devjindal.me">innovvate.devjindal.me</a>.
-      </p>
-    </div>
+        <div class="acts">
+          <a class="btn btn-quiet" href="./assets/i-agree-slides.pdf" download
+            >Download the slides</a
+          >
+        </div>
+      </section>
+
+      <!-- Exhibit C ---------------------------------------------------- -->
+      <section class="sheet exhibit" id="c">
+        <div class="exhibit-head">
+          <div class="stamp">Exhibit<b>C</b></div>
+          <div>
+            <h2>Working prototype</h2>
+            <p class="note">
+              Deployed and usable now. Paste any terms of service and it runs the real analysis.
+            </p>
+          </div>
+        </div>
+
+        <a href="https://innovvate.devjindal.me" aria-label="Open the live prototype">
+          <img
+            class="shot"
+            src="./assets/prototype.png"
+            alt="The prototype: risk flags on the left, the source document on the right with every cited clause highlighted."
+            loading="lazy"
+          />
+        </a>
+
+        <div class="acts">
+          <a class="btn btn-lead" href="https://innovvate.devjindal.me">Open the prototype</a>
+          <a class="btn btn-quiet" href="https://innovvate.devjindal.me/api/health"
+            >Check live status</a
+          >
+        </div>
+      </section>
+
+      <!-- Exhibit D ---------------------------------------------------- -->
+      <section class="sheet exhibit" id="d">
+        <div class="exhibit-head">
+          <div class="stamp">Exhibit<b>D</b></div>
+          <div>
+            <h2>Demonstration video</h2>
+            <p class="note">
+              38 seconds, inside the two-minute limit. The screen footage is the deployed
+              application, recorded in one unedited session.
+            </p>
+          </div>
+        </div>
+
+        <video controls preload="metadata" poster="./assets/poster.png" playsinline>
+          <source src="./assets/demo-film.mp4" type="video/mp4" />
+          This browser cannot play embedded video.
+          <a href="./assets/demo-film.mp4">Download the demonstration video.</a>
+        </video>
+
+        <div class="acts">
+          <a class="btn btn-quiet" href="./assets/demo-film.mp4" download>Download the video</a>
+        </div>
+      </section>
+
+      <!-- Exhibit E ---------------------------------------------------- -->
+      <section class="sheet exhibit" id="e">
+        <div class="exhibit-head">
+          <div class="stamp">Exhibit<b>E</b></div>
+          <div>
+            <h2>Files and source</h2>
+            <p class="note">
+              Everything behind the packet. One repository holds the application, this page, the
+              slides, and the scripts that produced the video.
+            </p>
+          </div>
+        </div>
+
+        <div class="scroller">
+          <table class="schedule">
+            <thead>
+              <tr>
+                <th class="field-label">Item</th>
+                <th class="field-label">What it is</th>
+                <th class="field-label">Where</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="item">Source code</td>
+                <td class="desc">
+                  The whole application: analysis pipeline, quote verification, interface.
+                </td>
+                <td>
+                  <a href="https://github.com/satyandeveloper/VASANT_VALLEY_innovvate"
+                    >github.com/satyandeveloper/VASANT_VALLEY_innovvate</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="item">Live prototype</td>
+                <td class="desc">The deployed application, running against the live model.</td>
+                <td><a href="https://innovvate.devjindal.me">innovvate.devjindal.me</a></td>
+              </tr>
+              <tr>
+                <td class="item">Demonstration video</td>
+                <td class="desc">
+                  1080p MP4, composed in Remotion from a real recorded session.
+                </td>
+                <td><a href="./assets/demo-film.mp4">assets/demo-film.mp4</a></td>
+              </tr>
+              <tr>
+                <td class="item">Slides</td>
+                <td class="desc">The three slides above, as a printable PDF.</td>
+                <td><a href="./assets/i-agree-slides.pdf">assets/i-agree-slides.pdf</a></td>
+              </tr>
+              <tr>
+                <td class="item">Video source</td>
+                <td class="desc">
+                  The Remotion composition and the Playwright script that captured the footage.
+                </td>
+                <td>
+                  <a
+                    href="https://github.com/satyandeveloper/VASANT_VALLEY_innovvate/tree/main/supporting"
+                    >supporting/</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="item">Sample documents</td>
+                <td class="desc">
+                  The public documents used for the demos, with their sources credited.
+                </td>
+                <td>
+                  <a
+                    href="https://github.com/satyandeveloper/VASANT_VALLEY_innovvate/tree/main/scripts/samples"
+                    >scripts/samples/</a
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <!-- The bar that closes every page the app has. -->
+    <footer>
+      <span class="field-label">
+        I AGREE is an information tool, not a law firm. It does not give legal advice and will not
+        catch everything — for anything that matters, talk to a qualified lawyer.
+        <a href="https://innovvate.devjindal.me">innovvate.devjindal.me</a>
+      </span>
+    </footer>
 
     <script>
-      // The index cites the line each exhibit begins on. Reading the numbers
-      // back out of the document means a citation can never drift from what it
-      // points at — which is the same rule the product holds itself to.
-      const lines = [...document.querySelectorAll(".line")];
-      for (const cite of document.querySelectorAll("[data-cite]")) {
-        const head = document
-          .getElementById(cite.dataset.cite)
-          ?.querySelector(".line");
-        const n = lines.indexOf(head);
-        if (n >= 0) cite.textContent = `Line ${String(n + 1).padStart(2, "0")}`;
-      }
+      // The wall has to fill its block at any viewport height — a half-empty
+      // one reads as a mistake rather than as a wall. The app repeats the same
+      // paragraph three times for exactly this reason; repeating it here keeps
+      // one copy of the text in the source instead of three. Decorative and
+      // aria-hidden, so losing it without JS costs nothing but texture.
+      const wall = document.getElementById("wall");
+      wall.textContent = `${wall.textContent.trim()} `.repeat(3);
     </script>
   </body>
 </html>
